@@ -1,0 +1,3737 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>bbs Music Theory Studio — 7 ชาร์ป 7 แฟลต & สเกลไมเนอร์</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --board-bg: #ffffff;
+      --row-idx-bg: #f8fafc;
+      --row-idx-text: #334155;
+      --cell-given-bg: #fef08a;
+      --cell-given-text: #0f172a;
+      --cell-sharp-hi-bg: #4ade80;
+      --cell-sharp-hi-text: #052e16;
+      --cell-flat-hi-bg: #38bdf8;
+      --cell-flat-hi-text: #082f49;
+      --cell-root-bg: #dbeafe;
+      --cell-root-text: #1e3a8a;
+      --cell-blank-bg: #ffffff;
+      --cell-filled-draft-bg: #f3e8ff;
+      --cell-filled-draft-text: #3b0764;
+      --cell-active-border: #2563eb;
+      --cell-active-bg: #eff6ff;
+      --cell-correct-bg: #bbf7d0;
+      --cell-correct-text: #14532d;
+      --cell-wrong-bg: #fecaca;
+      --cell-wrong-text: #7f1d1d;
+      --key-btn-bg: #f3f4f6;
+      --key-btn-text: #111827;
+      --key-btn-border: #d1d5db;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Sarabun', sans-serif;
+      background-color: var(--board-bg);
+      color: #0f172a;
+      overflow-x: hidden;
+      transition: background-color 0.2s ease;
+    }
+
+    .row-num-cell {
+      background-color: var(--row-idx-bg);
+      color: var(--row-idx-text);
+    }
+
+    .cell-given {
+      background-color: var(--cell-given-bg);
+      color: var(--cell-given-text);
+    }
+
+    .cell-sharp-hi {
+      background-color: var(--cell-sharp-hi-bg);
+      color: var(--cell-sharp-hi-text);
+      font-weight: 900;
+    }
+
+    .cell-flat-hi {
+      background-color: var(--cell-flat-hi-bg);
+      color: var(--cell-flat-hi-text);
+      font-weight: 900;
+    }
+
+    .cell-root {
+      background-color: var(--cell-root-bg);
+      color: var(--cell-root-text);
+      font-weight: 900;
+    }
+
+    .cell-blank {
+      background-color: var(--cell-blank-bg);
+      color: #64748b;
+      border: 2px dashed #94a3b8 !important;
+      cursor: pointer;
+    }
+
+    .cell-filled-draft {
+      background-color: var(--cell-filled-draft-bg) !important;
+      color: var(--cell-filled-draft-text) !important;
+      border: 2px solid #9333ea !important;
+      cursor: pointer;
+    }
+
+    .cell-blank:hover, .cell-filled-draft:hover {
+      background-color: var(--cell-active-bg) !important;
+      border-color: var(--cell-active-border) !important;
+    }
+
+    .cell-active {
+      background-color: var(--cell-active-bg) !important;
+      border: 2.5px solid var(--cell-active-border) !important;
+      box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.22);
+    }
+
+    .cell-correct {
+      background-color: var(--cell-correct-bg) !important;
+      color: var(--cell-correct-text) !important;
+      border: 2px solid #16a34a !important;
+      font-weight: 900;
+    }
+
+    .cell-wrong {
+      background-color: var(--cell-wrong-bg) !important;
+      color: var(--cell-wrong-text) !important;
+      border: 2px solid #dc2626 !important;
+      font-weight: 900;
+    }
+
+    .cell-playing-note {
+      outline: 3px solid #f59e0b !important;
+      transform: scale(1.06);
+      z-index: 5;
+    }
+
+    #floatingNotePicker {
+      position: fixed;
+      z-index: 65;
+      background: #ffffff;
+      color: #0f172a;
+      border: 2px solid #2563eb;
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.35);
+      transform-origin: bottom right;
+    }
+
+    .mt-key-btn {
+      background: linear-gradient(180deg, #ffffff 0%, var(--key-btn-bg) 100%);
+      color: var(--key-btn-text);
+      border: 1.5px solid var(--key-btn-border);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+      transition: all 0.08s ease;
+      user-select: none;
+    }
+    .mt-key-btn:hover {
+      filter: brightness(0.96);
+      border-color: var(--cell-active-border);
+    }
+    .mt-key-btn:active {
+      transform: scale(0.97);
+    }
+    .mt-int-btn {
+      background: linear-gradient(180deg, #ffffff 0%, var(--key-btn-bg) 100%);
+      color: var(--key-btn-text);
+      border: 1.5px solid var(--key-btn-border);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+      transition: all 0.08s ease;
+      user-select: none;
+    }
+    .mt-int-btn:hover {
+      filter: brightness(0.96);
+      border-color: var(--cell-active-border);
+    }
+    .mt-int-btn:active {
+      transform: scale(0.97);
+    }
+    .mt-key-kbd-focus {
+      outline: 3px solid #2563eb !important;
+      background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%) !important;
+      border-color: #1d4ed8 !important;
+      transform: translateY(-1px) scale(1.04);
+      z-index: 5;
+    }
+    #floatingNotePicker.picker-kbd-active {
+      border-color: #1d4ed8;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.22), 0 20px 40px -12px rgba(15, 23, 42, 0.4);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      background: #1e293b;
+      height: 6px;
+      border-radius: 999px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #3b82f6;
+      cursor: pointer;
+      border: 2px solid #ffffff;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- 1. แถบสลับโหมดหลักด่วนมุมขวาบน -->
+  <div id="topQuickModeBar" class="fixed top-3 right-3 z-[76] flex items-center gap-1 bg-slate-900/95 backdrop-blur-md border border-slate-700/90 p-1 rounded-2xl shadow-xl text-xs select-none">
+    <button type="button" id="quickTabSF" data-module="sharps_flats" class="module-tab-btn px-3 py-1.5 rounded-xl font-extrabold bg-blue-600 text-white shadow transition">
+      ♯♭ 7 ชาร์ป 7 แฟลต
+    </button>
+    <button type="button" id="quickTabMinor" data-module="minor_scales" class="module-tab-btn px-3 py-1.5 rounded-xl font-bold text-slate-300 hover:bg-slate-800 hover:text-white transition">
+      🎼 สเกล
+    </button>
+    <button type="button" id="quickTabChords" data-module="chords" class="module-tab-btn px-3 py-1.5 rounded-xl font-bold text-slate-300 hover:bg-slate-800 hover:text-white transition">
+      🎸 คอร์ด
+    </button>
+    <button type="button" id="quickTabIntervals" data-module="intervals" class="module-tab-btn px-3 py-1.5 rounded-xl font-bold text-slate-300 hover:bg-slate-800 hover:text-white transition">
+      📏 ขั้นคู่
+    </button>
+  </div>
+
+  <!-- 2. แถบไอคอนแนวตั้งชิดขอบซ้าย + ลิ้นชักตั้งค่าสไลด์เปิด-ปิดได้ -->
+  <div id="edgeSideDock" class="fixed left-0 top-1/2 -translate-y-1/2 z-[75] flex items-center select-none pointer-events-none">
+    <div id="edgeTabRail" class="pointer-events-auto flex flex-col gap-1.5 bg-slate-900/95 backdrop-blur-md border border-l-0 border-slate-700/90 py-2.5 px-1.5 rounded-r-2xl shadow-2xl">
+      <button type="button" data-sidetab="shared_pool" class="side-rail-btn flex flex-col items-center justify-center w-14 py-2 px-1 rounded-xl bg-slate-800/90 hover:bg-indigo-600 text-slate-200 hover:text-white border border-slate-700/80 transition" title="โหมดใช้ชุดโน้ต/คีย์ร่วมกันทุกแบบฝึกหัด หรือแยกแต่ละเรื่อง">
+        <span class="text-sm font-black leading-none">🎯</span>
+        <span class="text-[10px] font-extrabold mt-1 leading-tight text-center">ชุดร่วม</span>
+      </button>
+      <button type="button" data-sidetab="sf_topic" class="side-rail-btn flex flex-col items-center justify-center w-14 py-2 px-1 rounded-xl bg-slate-800/90 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700/80 transition" title="7 ชาร์ป 7 แฟลต">
+        <span class="text-sm font-black leading-none">♯♭</span>
+        <span class="text-[10px] font-extrabold mt-1 leading-tight text-center">7♯ 7♭</span>
+      </button>
+      <button type="button" data-sidetab="scale_topic" class="side-rail-btn flex flex-col items-center justify-center w-14 py-2 px-1 rounded-xl bg-slate-800/90 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700/80 transition" title="สเกล (ไมเนอร์ / เมเจอร์)">
+        <span class="text-base leading-none">🎼</span>
+        <span class="text-[10px] font-extrabold mt-1 leading-tight text-center">สเกล</span>
+      </button>
+      <button type="button" data-sidetab="chord_topic" class="side-rail-btn flex flex-col items-center justify-center w-14 py-2 px-1 rounded-xl bg-slate-800/90 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700/80 transition" title="คอร์ด 3 โน้ต / 4 โน้ต / พลิกกลับ">
+        <span class="text-base leading-none">🎸</span>
+        <span class="text-[10px] font-extrabold mt-1 leading-tight text-center">คอร์ด</span>
+      </button>
+      <button type="button" data-sidetab="interval_topic" class="side-rail-btn flex flex-col items-center justify-center w-14 py-2 px-1 rounded-xl bg-slate-800/90 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700/80 transition" title="ขั้นคู่ 2-8 / ขาขึ้น-ขาลง / คุณภาพขั้นคู่">
+        <span class="text-base leading-none">📏</span>
+        <span class="text-[10px] font-extrabold mt-1 leading-tight text-center">ขั้นคู่</span>
+      </button>
+      <button type="button" data-sidetab="timer" class="side-rail-btn flex flex-col items-center justify-center w-14 py-2 px-1 rounded-xl bg-slate-800/90 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700/80 transition" title="ตั้งค่ารูปแบบการจับเวลาและจำนวนข้อ">
+        <span class="text-base leading-none">⏱️</span>
+        <span class="text-[10px] font-extrabold mt-1 leading-tight text-center">จับเวลา</span>
+      </button>
+      <button type="button" data-sidetab="tools" class="side-rail-btn flex flex-col items-center justify-center w-14 py-2 px-1 rounded-xl bg-slate-800/90 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700/80 transition" title="เสียง, สูตรโครงสร้าง, สีอิสระ และดาวน์โหลด">
+        <span class="text-base leading-none">🛠️</span>
+        <span class="text-[10px] font-extrabold mt-1 leading-tight text-center">เครื่องมือ</span>
+      </button>
+    </div>
+
+    <div id="edgeSideDrawer" class="hidden pointer-events-auto ml-2 w-[340px] sm:w-[390px] max-w-[82vw] max-h-[84vh] overflow-y-auto bg-[#111827]/95 backdrop-blur-xl border-2 border-slate-700 rounded-3xl p-4 shadow-2xl space-y-3 text-slate-100">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 sticky top-0 bg-[#111827]/95 z-10">
+        <span id="edgeSideDrawerTitle" class="text-xs font-black text-blue-400 uppercase tracking-wider">ตั้งค่า</span>
+        <div class="flex items-center gap-1.5">
+          <button type="button" id="btnSideDrawerRandomNow" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold shadow">🎲 สุ่มใหม่</button>
+          <button type="button" id="btnCloseSideDrawer" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white text-xs font-bold transition" title="ปิดแผงด้านข้าง (Esc)">✕</button>
+        </div>
+      </div>
+
+      <div id="sidePanel_shared_pool" class="side-drawer-panel hidden space-y-3 text-xs">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-indigo-300">โหมดใช้ชุดโน้ตร่วมกันทุกแบบฝึกหัด</span>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="chkSharedNotePoolMode" class="accent-indigo-500 w-4 h-4 rounded">
+              <span id="sharedPoolModeLabel" class="font-black text-slate-300">ปิด (แยกตามเรื่อง)</span>
+            </label>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            เมื่อ <strong>เปิด</strong> จะบังคับให้ทุกแบบฝึกหัดใช้ชุดโน้ต/คีย์ที่เลือกด้านล่างนี้เท่านั้น (ปุ่มบนแท็บเลือกโน้ตยังอยู่ครบเหมือนเดิม) • เมื่อ <strong>ปิด</strong> จะใช้การตั้งค่าแยกของแต่ละเรื่อง (7♯ 7♭ แยกต่างหาก, สเกล และคอร์ด)
+          </p>
+        </div>
+
+        <div id="sharedPoolChoicesBox" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-amber-300">เลือกโน้ต/คีย์หลักที่ใช้ร่วมกัน</span>
+            <button type="button" id="btnSharedPoolAll" class="px-2 py-0.5 rounded bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 text-[10px] font-bold">เลือกทั้งหมด</button>
+          </div>
+          <div id="sharedNotePoolGrid" class="grid grid-cols-5 gap-1.5"></div>
+        </div>
+      </div>
+
+      <div id="sidePanel_sf_topic" class="side-drawer-panel hidden space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-extrabold text-blue-300">โหมด 7 ชาร์ป 7 แฟลต</span>
+          <button type="button" id="btnEnterSFMode" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-extrabold">เปิดหน้ากระดานนี้</button>
+        </div>
+
+        <div>
+          <div class="font-bold text-slate-300 mb-1.5">เลือกชุดตารางที่ต้องการ</div>
+          <div class="grid grid-cols-1 gap-1.5">
+            <button type="button" data-gmode="sharps" class="gmode-btn py-2 px-3 rounded-xl font-extrabold bg-blue-600 text-white text-left">♯ เฉพาะทางชาร์ป (0–7♯)</button>
+            <button type="button" data-gmode="flats" class="gmode-btn py-2 px-3 rounded-xl font-bold bg-slate-900 text-slate-300 hover:text-white text-left border border-slate-800">♭ เฉพาะทางแฟลต (0–7♭)</button>
+            <button type="button" data-gmode="both" class="gmode-btn py-2 px-3 rounded-xl font-bold bg-slate-900 text-slate-300 hover:text-white text-left border border-slate-800">♯♭ ทั้งสองอันพร้อมกัน</button>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-300">สุ่มให้หายไป:</span>
+            <span id="missingPctLabel" class="font-mono font-black text-amber-400 text-sm">50%</span>
+          </div>
+          <input id="missingPctSlider" type="range" min="20" max="100" step="5" value="50" class="w-full">
+          <div class="flex flex-wrap gap-1 pt-0.5">
+            <button type="button" data-pct="20" class="pct-preset px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300">20%</button>
+            <button type="button" data-pct="40" class="pct-preset px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300">40%</button>
+            <button type="button" data-pct="50" class="pct-preset px-2 py-1 rounded bg-blue-600 text-[10px] font-bold text-white">50%</button>
+            <button type="button" data-pct="75" class="pct-preset px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300">75%</button>
+            <button type="button" data-pct="100" class="pct-preset px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-amber-300">100%</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="sidePanel_scale_topic" class="side-drawer-panel hidden space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-extrabold text-emerald-300">ตั้งค่าโหมดสเกล</span>
+          <button type="button" id="btnEnterScaleMode" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-extrabold">เปิดหน้ากระดานสเกล</button>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="font-bold text-slate-300">เลือกชนิดสเกลที่ต้องการฝึก</div>
+          <div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button type="button" data-scfamily="minor" class="scfamily-btn py-2 px-2.5 rounded-lg font-extrabold bg-blue-600 text-white text-center">ไมเนอร์ (Minor)</button>
+            <button type="button" data-scfamily="major" class="scfamily-btn py-2 px-2.5 rounded-lg font-bold text-slate-300 hover:text-white text-center">เมเจอร์ (Major)</button>
+          </div>
+        </div>
+
+        <div id="minorSubSettingsBox" class="space-y-2.5 bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-blue-300">เรียงตามจำนวนสูตรเทียบ Major</span>
+            <button type="button" id="btnSelectAll3Minor" class="px-2 py-0.5 rounded bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 text-[10px] font-bold">เลือกทั้ง 3</button>
+          </div>
+          <div class="space-y-1.5">
+            <label class="flex items-center justify-between gap-2 bg-slate-950 border border-slate-700 hover:border-blue-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <span class="flex items-center gap-2">
+                <input type="checkbox" id="chkMinorMelodic" checked class="minor-type-chk accent-blue-500 w-4 h-4 rounded">
+                <span class="font-bold text-slate-200">Melodic Minor</span>
+              </span>
+              <span class="text-[10px] font-mono font-extrabold text-amber-300">♭3</span>
+            </label>
+            <label class="flex items-center justify-between gap-2 bg-slate-950 border border-slate-700 hover:border-blue-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <span class="flex items-center gap-2">
+                <input type="checkbox" id="chkMinorHarmonic" checked class="minor-type-chk accent-blue-500 w-4 h-4 rounded">
+                <span class="font-bold text-slate-200">Harmonic Minor</span>
+              </span>
+              <span class="text-[10px] font-mono font-extrabold text-amber-300">♭3, ♭6</span>
+            </label>
+            <label class="flex items-center justify-between gap-2 bg-slate-950 border border-slate-700 hover:border-blue-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <span class="flex items-center gap-2">
+                <input type="checkbox" id="chkMinorNatural" checked class="minor-type-chk accent-blue-500 w-4 h-4 rounded">
+                <span class="font-bold text-slate-200">Natural Minor</span>
+              </span>
+              <span class="text-[10px] font-mono font-extrabold text-amber-300">♭3, ♭6, ♭7</span>
+            </label>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 mb-1">รูปแบบ Melodic Minor ขาลง</label>
+            <select id="melodicDescModeSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-amber-300 focus:outline-none">
+              <option value="classical" selected>แบบคลาสสิก (ลด 6, 7 กลับเป็น Natural)</option>
+              <option value="jazz">แบบแจ๊ส / สมัยใหม่ (คง ♯6, ♯7 เดิมขาลง)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 mb-1">ทิศทางสเกล</label>
+          <div class="grid grid-cols-2 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button type="button" data-dir="asc" class="dir-btn py-1.5 px-2 rounded-lg font-extrabold bg-blue-600 text-white">ขาไป (↑)</button>
+            <button type="button" data-dir="both" class="dir-btn py-1.5 px-2 rounded-lg font-bold text-slate-400 hover:text-white">ขาไปกลับ (↑↓)</button>
+          </div>
+        </div>
+
+        <div class="space-y-1.5 bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-amber-300">ตัวโน้ตสเกลที่ให้เติม (เลือกได้หลายอัน / อันเดียว)</span>
+            <button type="button" id="btnScaleLayersAll" class="px-2 py-0.5 rounded bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 text-[10px] font-bold">เอาทั้งหมด</button>
+          </div>
+          <div class="grid grid-cols-3 gap-1.5">
+            <label class="flex items-center gap-1.5 bg-slate-950 border border-slate-700 hover:border-amber-400 rounded-xl px-2 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkScaleLayer3" checked class="scale-layer-chk accent-amber-400 w-3.5 h-3.5 rounded">
+              <span class="font-bold text-slate-200 text-[11px]">3 โน้ต</span>
+            </label>
+            <label class="flex items-center gap-1.5 bg-slate-950 border border-slate-700 hover:border-amber-400 rounded-xl px-2 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkScaleLayer4" checked class="scale-layer-chk accent-amber-400 w-3.5 h-3.5 rounded">
+              <span class="font-bold text-slate-200 text-[11px]">4 โน้ต</span>
+            </label>
+            <label class="flex items-center gap-1.5 bg-slate-950 border border-slate-700 hover:border-amber-400 rounded-xl px-2 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkScaleLayerTension" checked class="scale-layer-chk accent-amber-400 w-3.5 h-3.5 rounded">
+              <span class="font-bold text-slate-200 text-[11px]">Tension</span>
+            </label>
+          </div>
+          <div class="text-[10px] text-slate-400 leading-relaxed">
+            3 โน้ต = 1, 3, 5 • 4 โน้ต = 7 • Tension = 9, 11, 13 (เว้นให้เติมเองทุกตัวที่เลือก)
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-2 border-t border-slate-800">
+          <div class="flex flex-wrap items-center justify-between gap-1">
+            <span class="font-bold text-emerald-300">เลือกคีย์ (Key Signatures)</span>
+            <div class="flex items-center gap-1">
+              <button type="button" id="btnKeysSelectAll" class="px-2 py-0.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-extrabold">✓ เอาทั้งหมด</button>
+              <button type="button" id="btnKeysSelectSharps" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-slate-700 text-[10px] font-extrabold">♯ ทางชาร์ป</button>
+              <button type="button" id="btnKeysSelectFlats" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-sky-600 text-sky-300 hover:text-white border border-slate-700 text-[10px] font-extrabold">♭ ทางแฟลต</button>
+            </div>
+          </div>
+          <div id="mtKeySignaturesPickerGrid" class="bg-slate-950 border border-slate-800 rounded-xl p-2 space-y-1.5"></div>
+          <div id="selectedKeysSummaryText" class="text-[10px] text-slate-400">เลือกไว้ 12 / 15 คีย์</div>
+        </div>
+      </div>
+
+      <div id="sidePanel_chord_topic" class="side-drawer-panel hidden space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-extrabold text-amber-300">ตั้งค่าคอร์ด (เว้นให้เติมเองทั้งหมด)</span>
+          <button type="button" id="btnEnterChordMode" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-extrabold">เปิดหน้ากระดานคอร์ด</button>
+        </div>
+
+        <div class="space-y-1.5 bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-blue-300">คอร์ด 3 โน้ต (Triads)</span>
+            <label class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-600/20 border border-blue-500/30 text-blue-200 text-[10px] font-bold cursor-pointer">
+              <input type="checkbox" id="chkTriadGroupAll" checked class="accent-blue-500 w-3.5 h-3.5 rounded">
+              <span>เลือกทั้งหมด</span>
+            </label>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-blue-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkTriadMajor" checked class="triad-type-chk accent-blue-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">Major</span>
+            </label>
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-blue-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkTriadMinor" checked class="triad-type-chk accent-blue-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">Minor</span>
+            </label>
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-blue-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkTriadDim" checked class="triad-type-chk accent-blue-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">Diminished</span>
+            </label>
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-blue-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkTriadAug" checked class="triad-type-chk accent-blue-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">Augmented</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="space-y-1.5 bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-emerald-300">คอร์ด 4 โน้ต (7th Chords)</span>
+            <label class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-600/20 border border-emerald-500/30 text-emerald-200 text-[10px] font-bold cursor-pointer">
+              <input type="checkbox" id="chkSeventhGroupAll" checked class="accent-emerald-500 w-3.5 h-3.5 rounded">
+              <span>เลือกทั้งหมด</span>
+            </label>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-emerald-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkSeventhMaj7" checked class="seventh-type-chk accent-emerald-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">Major 7</span>
+            </label>
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-emerald-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkSeventhDom7" checked class="seventh-type-chk accent-emerald-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">7 (Dom 7)</span>
+            </label>
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-emerald-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkSeventhMin7" checked class="seventh-type-chk accent-emerald-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">Minor 7</span>
+            </label>
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-emerald-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkSeventhMinMaj7" checked class="seventh-type-chk accent-emerald-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">Minor-Major 7</span>
+            </label>
+          </div>
+          <div class="text-[10px] text-slate-400">ติ๊ก "เลือกทั้งหมด" เพื่อเปิดทุกตัวแล้วค่อยเลือกเฉพาะตัวที่ต้องการ • ไม่ติ๊ก = ไม่เอา</div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 mb-1">การพลิกกลับของคอร์ด (Inversions)</label>
+          <div class="grid grid-cols-2 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button type="button" data-cinv="root_only" class="cinv-btn py-1.5 px-2 rounded-lg font-extrabold bg-blue-600 text-white">ไม่พลิกกลับ</button>
+            <button type="button" data-cinv="with_inv" class="cinv-btn py-1.5 px-2 rounded-lg font-bold text-slate-400 hover:text-white">รวมพลิกกลับ</button>
+          </div>
+        </div>
+
+        <div class="space-y-2 bg-slate-900/90 border border-amber-500/30 rounded-2xl p-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-amber-300">โน้ตตัวตั้งของคอร์ด (Root Notes)</span>
+            <div class="flex items-center gap-1">
+              <button type="button" id="btnChordRootsABCDEFG" class="px-2 py-0.5 rounded bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 text-[10px] font-bold">C–B ปกติ</button>
+              <button type="button" id="btnChordRootsAll" class="px-2 py-0.5 rounded bg-blue-600/30 hover:bg-blue-600/50 text-blue-200 text-[10px] font-bold">เลือกทั้งหมด</button>
+            </div>
+          </div>
+          <div id="chordRootPoolGrid" class="grid grid-cols-7 gap-1"></div>
+          <div id="chordExtraRootsGrid" class="grid grid-cols-4 gap-1 pt-1 border-t border-slate-800"></div>
+          <div class="text-[10px] text-slate-400">เลือกโน้ตที่จะใช้เป็นตัวตั้ง (ค่าเริ่มต้น: C, D, E, F, G, A, B)</div>
+        </div>
+
+        <div class="space-y-2 bg-slate-900/90 border border-sky-500/30 rounded-2xl p-2.5">
+          <div class="font-bold text-sky-300">รูปแบบการเขียนสัญลักษณ์คอร์ด</div>
+          <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+            <div>
+              <label class="block text-[10px] text-slate-400 mb-0.5">เมเจอร์ (Major)</label>
+              <select id="chordStyleMajorSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 font-bold text-white">
+                <option value="tri_symbol" selected>สามเหลี่ยม (C△ / C△7)</option>
+                <option value="maj_text">เขียน maj7 / เฉยๆ (Cmaj7 / C)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 mb-0.5">ไมเนอร์ (Minor)</label>
+              <select id="chordStyleMinorSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 font-bold text-white">
+                <option value="minus" selected>ขีดลบ (C- / C-7)</option>
+                <option value="m_text">ตัว m (Cm / Cm7)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 mb-0.5">ออกเมนต์ (Augmented)</label>
+              <select id="chordStyleAugSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 font-bold text-white">
+                <option value="plus" selected>เครื่องหมายบวก (C+)</option>
+                <option value="aug_text">เขียน aug (Caug)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 mb-0.5">ดิมินิช (Diminished)</label>
+              <select id="chordStyleDimSelect" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 font-bold text-white">
+                <option value="deg" selected>วงกลมองศา (C°)</option>
+                <option value="dim_text">เขียน dim (Cdim)</option>
+              </select>
+            </div>
+          </div>
+          <label class="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 cursor-pointer pt-1.5">
+            <span class="text-[11px] font-bold text-slate-200">แสดงวงเล็บชื่อคอร์ดต่อท้าย (เช่น (Minor))</span>
+            <input type="checkbox" id="chkShowChordParenName" class="accent-sky-400 w-4 h-4 rounded">
+          </label>
+        </div>
+      </div>
+
+      <div id="sidePanel_interval_topic" class="side-drawer-panel hidden space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-extrabold text-amber-300">ตั้งค่าขั้นคู่ (ทีละ 1 ข้อ)</span>
+          <button type="button" id="btnEnterIntervalMode" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-extrabold">เปิดหน้ากระดานขั้นคู่</button>
+        </div>
+
+        <div class="space-y-1.5 bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5">
+          <div class="font-bold text-blue-300">ทิศทางของขั้นคู่ (เลือกแยกหรือพร้อมกันได้)</div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-blue-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkIntDirAsc" checked class="int-dir-chk accent-blue-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">แบบปกติ</span>
+            </label>
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-blue-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkIntDirDesc" checked class="int-dir-chk accent-blue-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">พลิกกลับ</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="space-y-1.5 bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5">
+          <div class="font-bold text-indigo-300">กุญแจประจำหลัก (ติ๊กทั้ง 2 จะสุ่มทีละกุญแจต่อรอบ)</div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-indigo-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkIntClefTreble" checked class="int-clef-chk accent-indigo-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">𝄞 กุญแจซอล</span>
+            </label>
+            <label class="flex items-center gap-2 bg-slate-950 border border-slate-700 hover:border-indigo-500 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <input type="checkbox" id="chkIntClefBass" checked class="int-clef-chk accent-indigo-500 w-4 h-4 rounded">
+              <span class="font-bold text-slate-200">𝄢 กุญแจฟา</span>
+            </label>
+          </div>
+        </div>
+
+        <label class="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-2xl px-3 py-2 cursor-pointer">
+          <span class="font-bold text-slate-200 text-[11px]">แสดงชื่อโน้ตกำกับ (ปิดไว้เพื่ออ่านจากบรรทัด 5 เส้นเอง)</span>
+          <input type="checkbox" id="chkShowIntervalNoteLabels" checked class="accent-amber-400 w-4 h-4 rounded">
+        </label>
+
+        <div class="space-y-1.5 bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-emerald-300">ช่วงคู่ที่ต้องการฝึก (2–8)</span>
+            <button type="button" id="btnIntNumsAll" class="px-2 py-0.5 rounded bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 text-[10px] font-bold">เอาทั้งหมด</button>
+          </div>
+          <div id="intervalNumGrid" class="grid grid-cols-7 gap-1"></div>
+        </div>
+
+        <div class="space-y-1.5 bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-sky-300">ชนิดของขั้นคู่ (Quality)</span>
+            <button type="button" id="btnIntQualsAll" class="px-2 py-0.5 rounded bg-sky-600/30 hover:bg-sky-600/50 text-sky-200 text-[10px] font-bold">เอาทั้งหมด</button>
+          </div>
+          <div id="intervalQualGrid" class="grid grid-cols-5 gap-1"></div>
+        </div>
+
+        <div id="intervalOwnRootBox" class="space-y-1.5 bg-slate-900/80 border border-slate-800 rounded-2xl p-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-amber-300">โน้ตตั้งต้นเฉพาะโหมดขั้นคู่</span>
+            <button type="button" id="btnIntRootsAll" class="px-2 py-0.5 rounded bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 text-[10px] font-bold">เอาทั้งหมด</button>
+          </div>
+          <div id="intervalRootGrid" class="grid grid-cols-5 gap-1.5"></div>
+          <div class="text-[10px] text-slate-400">หากเปิด "ชุดร่วม" ระบบจะใช้โน้ตจากชุดร่วมโดยอัตโนมัติ</div>
+        </div>
+      </div>
+
+      <div id="sidePanel_timer" class="side-drawer-panel hidden space-y-2.5 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-amber-300">รูปแบบการจับเวลา</span>
+          <button type="button" id="btnResetSessionChallenge" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-extrabold">▶ เริ่มรอบใหม่</button>
+        </div>
+        <div class="space-y-1.5">
+          <button type="button" data-tmode="stopwatch" class="tmode-btn w-full py-2 px-3 rounded-xl font-extrabold bg-blue-600 text-white text-left border border-blue-400/50">
+            <div>📝 1. โหมดปกติ (ไม่จับเวลา)</div>
+            <div class="text-[10px] opacity-85 font-normal">ถูกแล้วไปข้อถัดไปอัตโนมัติ • ผิดห้ามไปต่อ</div>
+          </button>
+          <button type="button" data-tmode="countdown" class="tmode-btn w-full py-2 px-3 rounded-xl font-bold bg-slate-900 text-slate-300 hover:text-white text-left border border-slate-800">
+            <div>🔥 2. โหมดท้าทาย (จับเวลา)</div>
+            <div class="text-[10px] opacity-75 font-normal">จับเวลาถอยหลัง • หมดเวลาแล้วขึ้นสรุปผลทุกครั้ง</div>
+          </button>
+          <button type="button" data-tmode="fixed_count" class="tmode-btn w-full py-2 px-3 rounded-xl font-bold bg-slate-900 text-slate-300 hover:text-white text-left border border-slate-800">
+            <div>🎯 3. โหมดจำกัดจำนวนข้อ (จับเวลา)</div>
+            <div class="text-[10px] opacity-75 font-normal">ทำครบ N ข้อ • จับเวลารวมและขึ้นสรุปผลตอนจบ</div>
+          </button>
+        </div>
+
+        <div id="subCountdownBox" class="hidden bg-slate-900 border border-amber-500/40 rounded-xl p-2.5 flex items-center justify-between">
+          <span class="text-amber-300 font-bold">เวลาแข่งขัน:</span>
+          <select id="countdownMinutesSelect" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 font-bold text-white">
+            <option value="60">1 นาที</option>
+            <option value="120">2 นาที</option>
+            <option value="180" selected>3 นาที</option>
+            <option value="300">5 นาที</option>
+            <option value="600">10 นาที</option>
+          </select>
+        </div>
+
+        <div id="subFixedCountBox" class="hidden bg-slate-900 border border-emerald-500/40 rounded-xl p-2.5 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-emerald-300 font-bold">จำนวนข้อเป้าหมาย (1–20):</span>
+            <select id="fixedQuestionCountSelect" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 font-bold text-white">
+            <option value="1">1 ข้อ</option>
+            <option value="2">2 ข้อ</option>
+            <option value="3">3 ข้อ</option>
+            <option value="4">4 ข้อ</option>
+            <option value="5" selected>5 ข้อ</option>
+            <option value="6">6 ข้อ</option>
+            <option value="7">7 ข้อ</option>
+            <option value="8">8 ข้อ</option>
+            <option value="9">9 ข้อ</option>
+            <option value="10">10 ข้อ</option>
+            <option value="11">11 ข้อ</option>
+            <option value="12">12 ข้อ</option>
+            <option value="13">13 ข้อ</option>
+            <option value="14">14 ข้อ</option>
+            <option value="15">15 ข้อ</option>
+            <option value="16">16 ข้อ</option>
+            <option value="17">17 ข้อ</option>
+            <option value="18">18 ข้อ</option>
+            <option value="19">19 ข้อ</option>
+            <option value="20">20 ข้อ</option>
+            </select>
+          </div>
+          <div class="flex items-center justify-between gap-2 text-[11px]">
+            <span class="text-slate-300 font-semibold">พิมพ์กำหนดเอง (1–20):</span>
+            <input id="fixedQuestionCustomInput" type="number" min="1" max="20" step="1" value="5" class="w-20 bg-slate-950 border border-emerald-500/50 rounded-lg px-2 py-1 font-mono font-black text-emerald-300 text-center focus:outline-none">
+          </div>
+        </div>
+      </div>
+
+      <div id="sidePanel_tools" class="side-drawer-panel hidden space-y-2.5 text-xs">
+        <label class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 cursor-pointer">
+          <span class="font-bold text-slate-200">🔊 เล่นเสียงโน้ตเมื่อกด</span>
+          <input type="checkbox" id="chkPlayNoteSoundGlobal" checked class="accent-emerald-500 w-4 h-4 rounded">
+        </label>
+        <label class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 cursor-pointer">
+          <span class="font-bold text-slate-200">💡 แสดงสูตรโครงสร้าง (สเกลไมเนอร์)</span>
+          <input type="checkbox" id="chkShowFormulaHint" class="accent-amber-500 w-4 h-4 rounded">
+        </label>
+        <button type="button" id="btnDrawerOpenColor" class="w-full py-2.5 px-3 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-extrabold text-left">
+          🎨 ปรับแต่งสีทุกจุดอย่างอิสระ
+        </button>
+        <button type="button" id="btnDrawerDownloadHtml" class="w-full py-2.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-left">
+          ⬇ ดาวน์โหลดไฟล์เว็บนี้ (.html)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. พื้นที่กระดาษขาวสะอาดเต็มตา -->
+  <main class="flex-1 w-full max-w-[1360px] mx-auto px-6 sm:px-16 pt-5 pb-32 flex flex-col justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200/80 pr-44">
+      <div id="topHeaderPlaceholder" class="hidden">
+        <span id="pageCleanTitle"></span>
+        <span id="pageCleanSubtitle"></span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
+        <div class="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1.5">
+          <span>⏱️</span>
+          <span id="timerLabelPrefix">เวลา:</span>
+          <span id="timerDisplay" class="font-mono font-black text-slate-900">00:00</span>
+        </div>
+
+        <div id="sessionRoundBadge" class="hidden px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-800 border border-indigo-200">
+          <span id="sessionRoundText">ข้อที่ 1 / 5</span>
+        </div>
+
+        <div class="px-3 py-1.5 rounded-xl bg-purple-50 text-purple-800 border border-purple-200">
+          ✍️ เติมแล้ว: <strong id="filledCountText">0/0</strong>
+        </div>
+
+        <div id="inlineGradeSummaryPill" class="hidden px-3 py-1.5 rounded-xl bg-slate-900 text-white border border-slate-700 flex flex-wrap items-center gap-2 shadow-sm">
+          <span id="inlineGradeScoreText" class="text-emerald-300 font-extrabold">ถูก 0/0</span>
+          <span class="text-slate-500">|</span>
+          <span id="inlineGradeWrongText" class="text-rose-400 font-extrabold">ผิด 0</span>
+          <span class="text-slate-500">|</span>
+          <span id="inlineSubmitCountText" class="text-amber-300 font-extrabold">ส่งครั้งที่ 0</span>
+
+        </div>
+
+        <button type="button" id="btnPlayAllScalesAudio" class="hidden px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition">
+          🔊 ฟังเทียบทุกแถว
+        </button>
+      </div>
+    </div>
+
+    <div id="startGateBanner" class="my-auto py-12 flex flex-col items-center justify-center text-center space-y-4">
+      <div class="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-3xl shadow-sm">🎼</div>
+      <div class="space-y-1">
+        <h2 id="startGateTitle" class="text-xl sm:text-2xl font-black text-slate-900">พร้อมเริ่มแบบฝึกหัด</h2>
+        <p id="startGateDesc" class="text-xs sm:text-sm text-slate-500 font-medium">กดปุ่มด้านล่างเพื่อเปิดแบบฝึกหัดและเริ่มจับเวลา</p>
+      </div>
+      <button type="button" id="btnStartExerciseGate" class="px-7 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black text-sm sm:text-base shadow-lg transition cursor-pointer">
+        ▶ กดเริ่มแบบฝึกหัด
+      </button>
+    </div>
+
+    <div id="exerciseBoardsWrapper" class="hidden my-auto py-6 overflow-x-auto">
+      <div id="board_sharps_flats">
+        <div id="gridsSideBySideWrapper" class="grid grid-cols-1 xl:grid-cols-2 gap-6 min-w-[660px]"></div>
+      </div>
+
+      <div id="board_minor_scales" class="hidden">
+        <div id="minorRowsContainer" class="space-y-3 min-w-[780px]"></div>
+      </div>
+
+      <div id="board_chords" class="hidden">
+        <div id="chordRowsContainer" class="space-y-3 min-w-[720px]"></div>
+      </div>
+
+      <div id="board_intervals" class="hidden">
+        <div id="intervalSingleCardContainer" class="max-w-3xl mx-auto"></div>
+      </div>
+    </div>
+
+    <div class="pt-3 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+      <div class="flex flex-wrap items-center gap-4 font-semibold">
+        <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>ช่องที่เติมแล้ว (รอตรวจ)</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>ตรวจแล้วผิด (คลิกแก้ได้)</span>
+        <span id="statusInlineHint" class="font-bold text-slate-700"></span>
+      </div>
+      <div class="text-[11px] text-slate-400 font-medium">
+        กด R หรือคลิก "▶ กดเริ่มแบบฝึกหัด" เพื่อเริ่มทำ • กด Space หรือคลิก "🎲 สุ่มใหม่" • กด Enter เพื่อยืนยันคำตอบ (เมื่อเติมครบ)
+      </div>
+    </div>
+  </main>
+
+  <!-- 4. หน้าต่างลอยตัวเลือกโน้ต 3x7 -->
+  <div id="floatingNotePicker" tabindex="-1" class="p-3" style="right: 18px; bottom: 88px; width: 410px; max-width: 92vw;">
+    <div id="pickerDragHeader" class="flex items-center justify-between gap-1.5 pb-1.5 mb-2 border-b border-slate-200 cursor-move select-none overflow-x-auto">
+      <div class="flex items-center gap-1 shrink-0">
+        <span id="pickerHeaderTitleText" class="text-xs font-black text-slate-800 whitespace-nowrap shrink-0">⠿ เลือกโน้ต</span>
+        <span id="pickerScaleBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 whitespace-nowrap shrink-0">100%</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <button type="button" id="btnPickerScaleDown" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs border border-slate-300" title="ย่อขนาด">A-</button>
+        <button type="button" id="btnPickerScaleUp" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs border border-slate-300" title="ขยายขนาด">A+</button>
+        <button type="button" id="btnPickerScaleReset" class="px-1.5 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[10px] border border-slate-300" title="รีเซ็ตขนาด">1x</button>
+        <button type="button" id="btnMinimizePickerTab" class="px-2 py-0.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-xs border border-rose-300" title="ซ่อนแท็บเลือกโน้ต">─</button>
+      </div>
+    </div>
+
+    <div id="noteAnswerPad" class="space-y-1.5">
+      <div class="grid grid-cols-7 gap-1.5">
+        <button type="button" data-note="C𝄪" class="mt-key-btn py-1.5 rounded-xl text-sm font-black">C𝄪</button>
+        <button type="button" data-note="D𝄪" class="mt-key-btn py-1.5 rounded-xl text-sm font-black">D𝄪</button>
+        <button type="button" data-note="E𝄪" class="mt-key-btn py-1.5 rounded-xl text-sm font-black">E𝄪</button>
+        <button type="button" data-note="F𝄪" class="mt-key-btn py-1.5 rounded-xl text-sm font-black">F𝄪</button>
+        <button type="button" data-note="G𝄪" class="mt-key-btn py-1.5 rounded-xl text-sm font-black">G𝄪</button>
+        <button type="button" data-note="A𝄪" class="mt-key-btn py-1.5 rounded-xl text-sm font-black">A𝄪</button>
+        <button type="button" data-note="B𝄪" class="mt-key-btn py-1.5 rounded-xl text-sm font-black">B𝄪</button>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5">
+        <button type="button" data-note="C♯" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">C♯</button>
+        <button type="button" data-note="D♯" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">D♯</button>
+        <button type="button" data-note="E♯" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">E♯</button>
+        <button type="button" data-note="F♯" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">F♯</button>
+        <button type="button" data-note="G♯" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">G♯</button>
+        <button type="button" data-note="A♯" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">A♯</button>
+        <button type="button" data-note="B♯" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">B♯</button>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5">
+        <button type="button" data-note="C" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">C</button>
+        <button type="button" data-note="D" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">D</button>
+        <button type="button" data-note="E" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">E</button>
+        <button type="button" data-note="F" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">F</button>
+        <button type="button" data-note="G" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">G</button>
+        <button type="button" data-note="A" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">A</button>
+        <button type="button" data-note="B" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">B</button>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5">
+        <button type="button" data-note="C♭" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">C♭</button>
+        <button type="button" data-note="D♭" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">D♭</button>
+        <button type="button" data-note="E♭" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">E♭</button>
+        <button type="button" data-note="F♭" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">F♭</button>
+        <button type="button" data-note="G♭" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">G♭</button>
+        <button type="button" data-note="A♭" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">A♭</button>
+        <button type="button" data-note="B♭" class="mt-key-btn py-1.5 rounded-xl text-xs sm:text-sm font-bold">B♭</button>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5">
+        <button type="button" data-note="C♭♭" class="mt-key-btn py-1.5 rounded-xl text-xs font-extrabold">C♭♭</button>
+        <button type="button" data-note="D♭♭" class="mt-key-btn py-1.5 rounded-xl text-xs font-extrabold">D♭♭</button>
+        <button type="button" data-note="E♭♭" class="mt-key-btn py-1.5 rounded-xl text-xs font-extrabold">E♭♭</button>
+        <button type="button" data-note="F♭♭" class="mt-key-btn py-1.5 rounded-xl text-xs font-extrabold">F♭♭</button>
+        <button type="button" data-note="G♭♭" class="mt-key-btn py-1.5 rounded-xl text-xs font-extrabold">G♭♭</button>
+        <button type="button" data-note="A♭♭" class="mt-key-btn py-1.5 rounded-xl text-xs font-extrabold">A♭♭</button>
+        <button type="button" data-note="B♭♭" class="mt-key-btn py-1.5 rounded-xl text-xs font-extrabold">B♭♭</button>
+      </div>
+    </div>
+
+    <div id="intervalAnswerPad" class="hidden space-y-1.5">
+      <div class="grid grid-cols-7 gap-1.5">
+        <button type="button" data-interval="A2" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">A2</button>
+        <button type="button" data-interval="A3" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">A3</button>
+        <button type="button" data-interval="A4" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">A4</button>
+        <button type="button" data-interval="A5" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">A5</button>
+        <button type="button" data-interval="A6" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">A6</button>
+        <button type="button" data-interval="A7" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">A7</button>
+        <button type="button" data-interval="A8" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">A8</button>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5">
+        <button type="button" data-interval="M2" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">M2</button>
+        <button type="button" data-interval="M3" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">M3</button>
+        <button type="button" data-interval="P4" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">P4</button>
+        <button type="button" data-interval="P5" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">P5</button>
+        <button type="button" data-interval="M6" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">M6</button>
+        <button type="button" data-interval="M7" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">M7</button>
+        <button type="button" data-interval="P8" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">P8</button>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5">
+        <button type="button" data-interval="m2" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">m2</button>
+        <button type="button" data-interval="m3" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">m3</button>
+        <span class="col-span-2"></span>
+        <button type="button" data-interval="m6" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">m6</button>
+        <button type="button" data-interval="m7" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">m7</button>
+        <span></span>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5">
+        <button type="button" data-interval="d2" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">d2</button>
+        <button type="button" data-interval="d3" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">d3</button>
+        <button type="button" data-interval="d4" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">d4</button>
+        <button type="button" data-interval="d5" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">d5</button>
+        <button type="button" data-interval="d6" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">d6</button>
+        <button type="button" data-interval="d7" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">d7</button>
+        <button type="button" data-interval="d8" class="mt-int-btn py-1.5 rounded-xl text-xs font-extrabold">d8</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. แถบเครื่องมือลอยด้านล่างสุด -->
+  <div id="floatingBottomBar" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/90 rounded-2xl p-2 shadow-2xl text-slate-100 select-none">
+    <div class="flex items-center gap-1.5 mb-1.5 px-1">
+      <span id="bottomBarDragHandle" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold cursor-move">⠿ ย้าย</span>
+      <button type="button" id="btnCollapseBottomBar" class="px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[10px] font-bold">▼ พับเก็บ</button>
+    </div>
+
+    <div id="bottomBarControlsRow" class="flex flex-wrap items-center gap-1.5 text-xs font-extrabold">
+      <button type="button" id="btnStartNewGame" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow transition">
+        🎲 สุ่มใหม่ (Space)
+      </button>
+
+      <button type="button" id="btnSubmitAnswers" disabled class="px-4 py-2 rounded-xl bg-emerald-600 disabled:bg-slate-800 disabled:text-slate-500 hover:bg-emerald-500 text-white shadow transition cursor-pointer disabled:cursor-not-allowed">
+        ✓ ยืนยันคำตอบ
+      </button>
+
+      <button type="button" id="btnClearSelectedDraft" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white border border-slate-700 transition">
+        ⌫ ลบช่อง
+      </button>
+
+
+      <button type="button" id="btnToggleFloatingPicker" class="px-3 py-2 rounded-xl bg-sky-600/25 hover:bg-sky-600/40 text-sky-300 border border-sky-500/40 transition">
+        🎹 แท็บโน้ต: เปิด
+      </button>
+
+      <button type="button" id="btnOpenColorStudio" class="px-3 py-2 rounded-xl bg-fuchsia-600/25 hover:bg-fuchsia-600/40 text-fuchsia-300 border border-fuchsia-500/40 transition">
+        🎨 สี
+      </button>
+
+      <button type="button" id="btnDownloadSelfHtml" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="ดาวน์โหลดไฟล์ HTML">
+        ⬇ โหลดไฟล์
+      </button>
+    </div>
+  </div>
+
+  <!-- หน้าต่างปรับสีอิสระ -->
+  <div id="colorModal" class="hidden fixed inset-0 z-[85] bg-black/65 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-slate-700 rounded-3xl max-w-lg w-full p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-white">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-fuchsia-400">Custom Color Studio</span>
+          <h2 class="text-lg font-extrabold">🎨 ปรับสีทุกจุดอย่างอิสระ</h2>
+        </div>
+        <button type="button" id="btnCloseColorModal" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">✕ ปิด</button>
+      </div>
+
+      <div class="grid grid-cols-3 gap-1.5 text-xs">
+        <button type="button" data-theme="default" class="theme-preset-btn py-2 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 font-bold text-white">☀️ กระดาษขาว (ค่าเริ่มต้น)</button>
+        <button type="button" data-theme="cream" class="theme-preset-btn py-2 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 font-bold text-amber-200">☕ กระดาษครีม</button>
+        <button type="button" data-theme="dark" class="theme-preset-btn py-2 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 font-bold text-sky-300">🌑 พื้นหลังมืด</button>
+      </div>
+
+      <div id="colorPickersGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs"></div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+        <button type="button" id="btnResetColors" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs">↺ คืนค่าสีเริ่มต้น</button>
+        <button type="button" id="btnApplyColorsClose" class="px-5 py-2 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-extrabold text-xs shadow">✓ เรียบร้อย</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- หน้าต่างสรุปผลบังหน้าจอเมื่อจับเวลาแบบที่ 2 เสร็จสิ้น -->
+  <div id="countdownResultModal" class="hidden fixed inset-0 z-[86] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-[#111827] border-2 border-amber-400/70 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl text-center text-white">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-3xl">⏳</div>
+      <div class="space-y-1">
+        <div class="text-[11px] font-black uppercase tracking-widest text-amber-300">สรุปผลการแข่งขันจับเวลา</div>
+        <h2 class="text-2xl font-black text-white">หมดเวลาแล้ว!</h2>
+        <p id="cdResultTimeText" class="text-xs text-slate-300 font-semibold"></p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 bg-slate-900/90 border border-slate-800 rounded-2xl p-4">
+        <div class="space-y-0.5">
+          <div class="text-[11px] text-slate-400 font-bold">ทำเสร็จทั้งหมด</div>
+          <div id="cdResultCompletedNum" class="text-3xl font-black text-emerald-400">0 ข้อ</div>
+        </div>
+        <div class="space-y-0.5 border-l border-slate-800">
+          <div class="text-[11px] text-slate-400 font-bold">ถูกสมบูรณ์</div>
+          <div id="cdResultPerfectNum" class="text-3xl font-black text-sky-400">0 ข้อ</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <button type="button" id="btnCdResultClose" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-extrabold text-xs transition">
+          ดูหน้ากระดาน
+        </button>
+        <button type="button" id="btnCdResultRestart" class="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs shadow transition">
+          ▶ เริ่มจับเวลาใหม่
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SHARP_ROWS_DATA = [
+      { countLabel: '0', notes: ['C',  'D',  'E',  'F',  'G',  'A',  'B'],  hiSet: new Set() },
+      { countLabel: '1', notes: ['G',  'A',  'B',  'C',  'D',  'E',  'F♯'], hiSet: new Set([6]) },
+      { countLabel: '2', notes: ['D',  'E',  'F♯', 'G',  'A',  'B',  'C♯'], hiSet: new Set([2, 6]) },
+      { countLabel: '3', notes: ['A',  'B',  'C♯', 'D',  'E',  'F♯', 'G♯'], hiSet: new Set([2, 5, 6]) },
+      { countLabel: '4', notes: ['E',  'F♯', 'G♯', 'A',  'B',  'C♯', 'D♯'], hiSet: new Set([1, 2, 5, 6]) },
+      { countLabel: '5', notes: ['B',  'C♯', 'D♯', 'E',  'F♯', 'G♯', 'A♯'], hiSet: new Set([1, 2, 4, 5, 6]) },
+      { countLabel: '6', notes: ['F♯', 'G♯', 'A♯', 'B',  'C♯', 'D♯', 'E♯'], hiSet: new Set([0, 1, 2, 4, 5, 6]) },
+      { countLabel: '7', notes: ['C♯', 'D♯', 'E♯', 'F♯', 'G♯', 'A♯', 'B♯'], hiSet: new Set([0, 1, 2, 3, 4, 5, 6]) }
+    ];
+
+    const FLAT_ROWS_DATA = [
+      { countLabel: '0', notes: ['C',  'D',  'E',  'F',  'G',  'A',  'B'],  hiSet: new Set() },
+      { countLabel: '1', notes: ['F',  'G',  'A',  'B♭', 'C',  'D',  'E'],  hiSet: new Set([3]) },
+      { countLabel: '2', notes: ['B♭', 'C',  'D',  'E♭', 'F',  'G',  'A'],  hiSet: new Set([0, 3]) },
+      { countLabel: '3', notes: ['E♭', 'F',  'G',  'A♭', 'B♭', 'C',  'D'],  hiSet: new Set([0, 3, 4]) },
+      { countLabel: '4', notes: ['A♭', 'B♭', 'C',  'D♭', 'E♭', 'F',  'G'],  hiSet: new Set([0, 1, 3, 4]) },
+      { countLabel: '5', notes: ['D♭', 'E♭', 'F',  'G♭', 'A♭', 'B♭', 'C'],  hiSet: new Set([0, 1, 3, 4, 5]) },
+      { countLabel: '6', notes: ['G♭', 'A♭', 'B♭', 'C♭', 'D♭', 'E♭', 'F'],  hiSet: new Set([0, 1, 2, 3, 4, 5]) },
+      { countLabel: '7', notes: ['C♭', 'D♭', 'E♭', 'F♭', 'G♭', 'A♭', 'B♭'], hiSet: new Set([0, 1, 2, 3, 4, 5, 6]) }
+    ];
+
+    const MINOR_KEYS_CATALOG = [
+      { id: '0_nat',  group: 'natural', count: 0, label: 'A',  midi: 69, standard: true },
+      { id: '1_flat', group: 'flat',    count: 1, label: 'D',  midi: 62, standard: true },
+      { id: '2_flat', group: 'flat',    count: 2, label: 'G',  midi: 67, standard: true },
+      { id: '3_flat', group: 'flat',    count: 3, label: 'C',  midi: 60, standard: true },
+      { id: '4_flat', group: 'flat',    count: 4, label: 'F',  midi: 65, standard: true },
+      { id: '5_flat', group: 'flat',    count: 5, label: 'B♭', midi: 70, standard: true },
+      { id: '6_flat', group: 'flat',    count: 6, label: 'E♭', midi: 63, standard: true },
+      { id: '7_flat', group: 'flat',    count: 7, label: 'A♭', midi: 68, standard: true },
+      { id: '1_sharp',group: 'sharp',   count: 1, label: 'E',  midi: 64, standard: true },
+      { id: '2_sharp',group: 'sharp',   count: 2, label: 'B',  midi: 71, standard: true },
+      { id: '3_sharp',group: 'sharp',   count: 3, label: 'F♯', midi: 66, standard: true },
+      { id: '4_sharp',group: 'sharp',   count: 4, label: 'C♯', midi: 61, standard: true },
+      { id: '5_sharp',group: 'sharp',   count: 5, label: 'G♯', midi: 68, standard: false },
+      { id: '7_sharp',group: 'sharp',   count: 7, label: 'A♯', midi: 70, standard: false }
+    ];
+
+    const MINOR_SCALE_FORMULAS = {
+      melodic: {
+        id: 'melodic',
+        title: 'Melodic Minor',
+        formulaDesc: 'สูตรเทียบ Major (7 โน้ต): 1 - 2 - ♭3 - 4 - 5 - 6 - 7',
+        ascSemi: [0, 2, 3, 5, 7, 9, 11],
+        descSemiNatural: [10, 8, 7, 5, 3, 2, 0],
+        descSemiJazz:    [11, 9, 7, 5, 3, 2, 0]
+      },
+      harmonic: {
+        id: 'harmonic',
+        title: 'Harmonic Minor',
+        formulaDesc: 'สูตรเทียบ Major (7 โน้ต): 1 - 2 - ♭3 - 4 - 5 - ♭6 - 7',
+        ascSemi: [0, 2, 3, 5, 7, 8, 11],
+        descSemiNatural: [11, 8, 7, 5, 3, 2, 0]
+      },
+      natural: {
+        id: 'natural',
+        title: 'Natural Minor',
+        formulaDesc: 'สูตรเทียบ Major (7 โน้ต): 1 - 2 - ♭3 - 4 - 5 - ♭6 - ♭7',
+        ascSemi: [0, 2, 3, 5, 7, 8, 10],
+        descSemiNatural: [10, 8, 7, 5, 3, 2, 0]
+      }
+    };
+
+    const MAJOR_SCALE_FORMULA = {
+      id: 'major',
+      title: 'Major Scale',
+      formulaDesc: 'โครงสร้างสเกลเมเจอร์ (7 โน้ต): 1 - 2 - 3 - 4 - 5 - 6 - 7',
+      ascSemi: [0, 2, 4, 5, 7, 9, 11],
+      descSemiNatural: [9, 7, 5, 4, 2, 0]
+    };
+
+    const NOTE_MIDI_MAP = {
+      'C𝄪': 62, 'D𝄪': 64, 'E𝄪': 66, 'F𝄪': 67, 'G𝄪': 69, 'A𝄪': 71, 'B𝄪': 73,
+      'C♯': 61, 'D♯': 63, 'E♯': 65, 'F♯': 66, 'G♯': 68, 'A♯': 70, 'B♯': 72,
+      'C':  60, 'D':  62, 'E':  64, 'F':  65, 'G':  67, 'A':  69, 'B':  71,
+      'C♭': 59, 'D♭': 61, 'E♭': 63, 'F♭': 64, 'G♭': 66, 'A♭': 68, 'B♭': 70,
+      'C♭♭': 58, 'D♭♭': 60, 'E♭♭': 62, 'F♭♭': 63, 'G♭♭': 65, 'A♭♭': 67, 'B♭♭': 69
+    };
+
+    const COLOR_FIELDS = [
+      { key: '--board-bg',             label: 'พื้นหลังกระดาษหลัก',        def: '#ffffff' },
+      { key: '--cell-given-bg',        label: 'พื้นหลังโน้ตปกติ (7♯7♭)',   def: '#fef08a' },
+      { key: '--cell-sharp-hi-bg',     label: 'พื้นหลังโน้ตชาร์ป (♯)',     def: '#4ade80' },
+      { key: '--cell-flat-hi-bg',      label: 'พื้นหลังโน้ตแฟลต (♭)',      def: '#38bdf8' },
+      { key: '--cell-root-bg',         label: 'พื้นหลังโน้ตตัวแรก (Minor)', def: '#dbeafe' },
+      { key: '--cell-blank-bg',        label: 'พื้นหลังช่องว่าง',          def: '#ffffff' },
+      { key: '--cell-filled-draft-bg', label: 'พื้นหลังช่องที่เติมแล้ว',   def: '#f3e8ff' },
+      { key: '--cell-active-border',   label: 'เส้นกรอบช่องที่เลือก',     def: '#2563eb' },
+      { key: '--cell-correct-bg',      label: 'พื้นหลังเมื่อถูกครบ',        def: '#bbf7d0' },
+      { key: '--cell-wrong-bg',        label: 'พื้นหลังเมื่อตรวจผิด',       def: '#fecaca' },
+      { key: '--key-btn-bg',           label: 'พื้นหลังปุ่มเลือกโน้ต',     def: '#f3f4f6' },
+      { key: '--key-btn-text',         label: 'ตัวอักษรปุ่มเลือกโน้ต',     def: '#111827' }
+    ];
+
+    function spellNoteFromRoot(rootLabel, letterStep, targetSemi) {
+      const letters = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+      const basePcs = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+      const rootLetter = rootLabel[0];
+      const rootIdx = letters.indexOf(rootLetter);
+      const targetLetter = letters[(((rootIdx + letterStep) % 7) + 7) % 7];
+
+      const rootMidi = NOTE_MIDI_MAP[rootLabel] || 60;
+      const expectedMidi = rootMidi + targetSemi;
+      const expectedPc = ((expectedMidi % 12) + 12) % 12;
+      const natPc = basePcs[targetLetter];
+
+      let diff = (expectedPc - natPc + 12) % 12;
+      if (diff > 6) diff -= 12;
+
+      if (diff === 0) return targetLetter;
+      if (diff === 1) return `${targetLetter}♯`;
+      if (diff === 2) return `${targetLetter}𝄪`;
+      if (diff === -1) return `${targetLetter}♭`;
+      if (diff === -2) return `${targetLetter}♭♭`;
+      return targetLetter;
+    }
+
+    function buildScaleSequenceWithMidis(rootObj, formulaObj, directionMode, melodicDescMode) {
+      if (directionMode === 'asc') {
+        return formulaObj.ascSemi.map((semi, idx) => ({
+          note: spellNoteFromRoot(rootObj.label, idx, semi),
+          midi: rootObj.midi + semi
+        }));
+      }
+
+      const octaveSemi = formulaObj.ascSemi[0] + 12;
+      const ascWithTurnSemi = [...formulaObj.ascSemi, octaveSemi];
+      const ascItems = ascWithTurnSemi.map((semi, idx) => ({
+        note: spellNoteFromRoot(rootObj.label, idx, semi),
+        midi: rootObj.midi + semi
+      }));
+
+      const descLetterSteps = [6, 5, 4, 3, 2, 1, 0];
+      const descSemiArr = (formulaObj.id === 'melodic' && melodicDescMode === 'jazz')
+        ? formulaObj.descSemiJazz
+        : formulaObj.descSemiNatural;
+
+      const descItems = descSemiArr.map((semi, idx) => ({
+        note: spellNoteFromRoot(rootObj.label, descLetterSteps[idx], semi),
+        midi: rootObj.midi + semi
+      }));
+      return [...ascItems, ...descItems];
+    }
+
+    const state = {
+      activeModule: 'sharps_flats',
+      exerciseStarted: false,
+      roundCounter: 0,
+      soundEnabled: true,
+      teacherReveal: false,
+      activeCellId: null,
+      submitted: false,
+      hasCheckedOnce: false,
+      allSolved: false,
+      submitAttempts: 0,
+      startTimeMs: null,
+      timerInterval: null,
+      pickerScale: 1.0,
+      pickerVisible: true,
+      notePickerFocused: false,
+      pickerFocusRow: 2,
+      pickerFocusCol: 0,
+      bottomBarCollapsed: false,
+      activeSideTab: null,
+      audioCtx: null,
+      playbackTimers: [],
+      customColors: {},
+
+      sfGridMode: 'sharps',
+      sfMissingPct: 50,
+      sfTables: [],
+
+      scaleFamily: 'minor',
+      selectedMinorKeyIds: new Set(MINOR_KEYS_CATALOG.filter(k => k.standard).map(k => k.id)),
+      selectedScaleNoteLabels: new Set(['C', 'D', 'E', 'F', 'G', 'A', 'B', 'B♭', 'E♭', 'A♭', 'F♯', 'C♯']),
+      minorDirection: 'asc',
+      melodicDescMode: 'classical',
+      minorTimerMode: 'stopwatch',
+      countdownLimitSec: 180,
+      fixedTargetCount: 5,
+      sessionQuestionIndex: 1,
+      sessionCompletedCount: 0,
+      sessionPerfectCount: 0,
+      sessionOver: false,
+      countdownEndTimeMs: null,
+      fixedStartTimeMs: null,
+      currentRoot: null,
+      minorRows: []
+    };
+
+    COLOR_FIELDS.forEach(f => { state.customColors[f.key] = f.def; });
+
+    function ensureAudio() {
+      if (!state.audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        state.audioCtx = new Ctx();
+      }
+      if (state.audioCtx.state === 'suspended') state.audioCtx.resume();
+      return state.audioCtx;
+    }
+
+    function playSingleMidi(midi, durSec = 0.36) {
+      if (!state.soundEnabled) return;
+      const ctx = ensureAudio();
+      const now = ctx.currentTime;
+      const freq = 440 * Math.pow(2, (midi - 69) / 12);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.24, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + durSec);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + durSec + 0.02);
+    }
+
+    function playNoteNameAudio(noteName) {
+      const midi = NOTE_MIDI_MAP[noteName] || 60;
+      playSingleMidi(midi, 0.36);
+    }
+
+    function stopScaleAudioSequence() {
+      state.playbackTimers.forEach(id => clearTimeout(id));
+      state.playbackTimers = [];
+      document.querySelectorAll('.cell-playing-note').forEach(el => el.classList.remove('cell-playing-note'));
+    }
+
+    function playScaleRowSequence(rowId, delayOffsetSec = 0) {
+      const row = state.minorRows.find(r => r.id === rowId);
+      if (!row) return 0;
+      const stepMs = 260;
+      row.cells.forEach((cell, idx) => {
+        const tId = setTimeout(() => {
+          document.querySelectorAll('.cell-playing-note').forEach(el => el.classList.remove('cell-playing-note'));
+          const btnEl = document.querySelector(`[data-cell-id="${cell.id}"]`);
+          if (btnEl) btnEl.classList.add('cell-playing-note');
+          playSingleMidi(cell.midi, 0.32);
+        }, (delayOffsetSec * 1000) + idx * stepMs);
+        state.playbackTimers.push(tId);
+      });
+      const endTimer = setTimeout(() => {
+        document.querySelectorAll('.cell-playing-note').forEach(el => el.classList.remove('cell-playing-note'));
+      }, (delayOffsetSec * 1000) + row.cells.length * stepMs + 150);
+      state.playbackTimers.push(endTimer);
+      return (row.cells.length * stepMs) / 1000;
+    }
+
+    function formatClock(secTotal) {
+      const s = Math.max(0, Math.floor(secTotal));
+      const mins = Math.floor(s / 60);
+      const secs = s % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function formatThaiDuration(secTotal) {
+      const s = Math.max(0, Math.floor(secTotal));
+      const mins = Math.floor(s / 60);
+      const secs = s % 60;
+      if (mins > 0) return `${mins} นาที ${secs} วินาที`;
+      return `${secs} วินาที`;
+    }
+
+    function stopTimer() {
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+    }
+
+    function setExerciseStartedState(started) {
+      state.exerciseStarted = started;
+      const gateEl = document.getElementById('startGateBanner');
+      const boardsEl = document.getElementById('exerciseBoardsWrapper');
+      if (gateEl) gateEl.classList.toggle('hidden', started);
+      if (boardsEl) boardsEl.classList.toggle('hidden', !started);
+      if (!started) {
+        stopTimer();
+        document.getElementById('timerDisplay').textContent = state.minorTimerMode === 'countdown'
+          ? formatClock(state.countdownLimitSec)
+          : 'ปิดอยู่';
+      }
+    }
+
+    function startOrUpdateTimer() {
+      if (!state.exerciseStarted) {
+        updateSessionBadgeUI();
+        return;
+      }
+      const activeTimerMode = state.minorTimerMode;
+      if (activeTimerMode === 'countdown') {
+        document.getElementById('timerLabelPrefix').textContent = 'เวลาท้าทาย:';
+        if (!state.countdownEndTimeMs && !state.sessionOver) {
+          state.countdownEndTimeMs = performance.now() + (state.countdownLimitSec * 1000);
+        }
+        if (state.countdownEndTimeMs && !state.sessionOver) {
+          const remNowSec = Math.max(0, (state.countdownEndTimeMs - performance.now()) / 1000);
+          document.getElementById('timerDisplay').textContent = formatClock(remNowSec);
+        }
+        if (!state.timerInterval && !state.sessionOver) {
+          state.timerInterval = setInterval(() => {
+            if (state.sessionOver) { stopTimer(); return; }
+            const remSec = Math.max(0, ((state.countdownEndTimeMs || performance.now()) - performance.now()) / 1000);
+            document.getElementById('timerDisplay').textContent = formatClock(remSec);
+            if (remSec <= 0) {
+              stopTimer();
+              handleCountdownTimeUp();
+            }
+          }, 250);
+        }
+      } else if (activeTimerMode === 'fixed_count') {
+        document.getElementById('timerLabelPrefix').textContent = 'เวลารวม:';
+        if (!state.fixedStartTimeMs && !state.sessionOver) {
+          state.fixedStartTimeMs = performance.now();
+        }
+        if (state.fixedStartTimeMs && !state.sessionOver) {
+          const curElapsed = (performance.now() - state.fixedStartTimeMs) / 1000;
+          document.getElementById('timerDisplay').textContent = formatClock(curElapsed);
+        }
+        if (!state.timerInterval && !state.sessionOver) {
+          state.timerInterval = setInterval(() => {
+            if (state.sessionOver) { stopTimer(); return; }
+            const elapsedSec = ((performance.now() - (state.fixedStartTimeMs || performance.now())) / 1000);
+            document.getElementById('timerDisplay').textContent = formatClock(elapsedSec);
+          }, 250);
+        }
+      } else {
+        // โหมดปกติ (1): ไม่มีการจับเวลา
+        stopTimer();
+        document.getElementById('timerLabelPrefix').textContent = 'จับเวลา:';
+        document.getElementById('timerDisplay').textContent = 'ปิดอยู่';
+      }
+      updateSessionBadgeUI();
+    }
+
+    function updateSessionBadgeUI() {
+      const badge = document.getElementById('sessionRoundBadge');
+      const txt = document.getElementById('sessionRoundText');
+      if (state.minorTimerMode === 'stopwatch') {
+        badge.classList.add('hidden');
+      } else if (state.minorTimerMode === 'countdown') {
+        badge.classList.remove('hidden');
+        txt.textContent = `ทำได้ ${state.sessionCompletedCount} ข้อ (ถูกหมด ${state.sessionPerfectCount})`;
+      } else if (state.minorTimerMode === 'fixed_count') {
+        badge.classList.remove('hidden');
+        txt.textContent = `ข้อ ${Math.min(state.sessionQuestionIndex, state.fixedTargetCount)} / ${state.fixedTargetCount}`;
+      }
+    }
+
+    function getCurrentModuleCells() {
+      const out = [];
+      if (state.activeModule === 'sharps_flats') {
+        state.sfTables.forEach(t => t.rows.forEach(r => r.cells.forEach(c => out.push(c))));
+      } else if (state.activeModule === 'minor_scales') {
+        state.minorRows.forEach(r => r.cells.forEach(c => out.push(c)));
+      } else if (state.activeModule === 'chords') {
+        state.chordRows.forEach(r => r.cells.forEach(c => out.push(c)));
+      } else if (state.activeModule === 'intervals') {
+        if (Array.isArray(state.intervalItems)) {
+          state.intervalItems.forEach(item => {
+            if (item && item.answerCell) out.push(item.answerCell);
+          });
+        }
+      }
+      return out;
+    }
+
+    function renderActiveBoard() {
+      if (state.activeModule === 'sharps_flats') renderSharpsFlatsGrids();
+      else if (state.activeModule === 'minor_scales') renderMinorRows();
+      else if (state.activeModule === 'chords') renderChordRows();
+      else if (state.activeModule === 'intervals') renderIntervalBoard();
+    }
+
+
+    function updateInlineGradeSummaryUI(correctCnt, wrongCnt, totalBlanks, isAllSolved) {
+      const pill = document.getElementById('inlineGradeSummaryPill');
+      const scoreEl = document.getElementById('inlineGradeScoreText');
+      const wrongEl = document.getElementById('inlineGradeWrongText');
+      const cntEl = document.getElementById('inlineSubmitCountText');
+      if (!pill) return;
+      if (!state.hasCheckedOnce) {
+        pill.classList.add('hidden');
+        return;
+      }
+      pill.classList.remove('hidden');
+      scoreEl.textContent = isAllSolved ? `ถูกครบ ${correctCnt}/${totalBlanks} ข้อ` : `ถูก ${correctCnt}/${totalBlanks}`;
+      wrongEl.textContent = wrongCnt > 0 ? `ผิด ${wrongCnt}` : 'ผิด 0';
+      wrongEl.className = wrongCnt > 0 ? 'text-rose-400 font-extrabold' : 'text-emerald-300 font-extrabold';
+      if (cntEl) {
+        cntEl.textContent = isAllSolved
+          ? `🎉 กดส่งไปทั้งหมด ${state.submitAttempts} ครั้ง`
+          : `ส่งครั้งที่ ${state.submitAttempts}`;
+      }
+    }
+
+    function collectWrongLabelsList() {
+      const wrongLabels = [];
+      if (state.activeModule === 'sharps_flats') {
+        state.sfTables.forEach(tbl => {
+          const prefix = tbl.kind === 'sharps' ? 'ชาร์ป' : 'แฟลต';
+          tbl.rows.forEach(row => {
+            const rowTag = row.countLabel === '0' ? '0' : `${row.countLabel}${tbl.kind === 'sharps' ? '♯' : '♭'}`;
+            row.cells.forEach((cell, cIdx) => {
+              if (cell.isBlank && cell.gradedStatus === 'wrong') {
+                wrongLabels.push(`${prefix} แถว ${rowTag} ช่องที่ ${cIdx + 1}`);
+              }
+            });
+          });
+        });
+      } else {
+        state.minorRows.forEach(row => {
+          row.cells.forEach((cell, cIdx) => {
+            if (cell.isBlank && cell.gradedStatus === 'wrong') {
+              wrongLabels.push(`${row.title} ช่องที่ ${cIdx + 1}`);
+            }
+          });
+        });
+      }
+      return wrongLabels;
+    }
+
+    const CHORD_CATALOG = [
+      // 3 โน้ต (Triads)
+      { id: 'tri_maj', family: 'triad', name: 'Major',      symbol: '',     steps: [0, 4, 7],      invNames: ['Root Position', '1st Inversion (6)', '2nd Inversion (6/4)'] },
+      { id: 'tri_min', family: 'triad', name: 'Minor',      symbol: 'm',    steps: [0, 3, 7],      invNames: ['Root Position', '1st Inversion (m6)', '2nd Inversion (m6/4)'] },
+      { id: 'tri_dim', family: 'triad', name: 'Diminished', symbol: 'dim',  steps: [0, 3, 6],      invNames: ['Root Position', '1st Inversion (dim6)', '2nd Inversion (dim6/4)'] },
+      { id: 'tri_aug', family: 'triad', name: 'Augmented',  symbol: 'aug',  steps: [0, 4, 8],      invNames: ['Root Position', '1st Inversion (aug6)', '2nd Inversion (aug6/4)'] },
+      // 4 โน้ต (7th Chords)
+      { id: 'sev_maj7',family: 'seventh',name: 'Major 7',   symbol: 'maj7', steps: [0, 4, 7, 11],  invNames: ['Root Position', '1st Inversion (6/5)', '2nd Inversion (4/3)', '3rd Inversion (4/2)'] },
+      { id: 'sev_dom7',family: 'seventh',name: '7',         symbol: '7',    steps: [0, 4, 7, 10],  invNames: ['Root Position', '1st Inversion (6/5)', '2nd Inversion (4/3)', '3rd Inversion (4/2)'] },
+      { id: 'sev_min7',family: 'seventh',name: 'Minor 7',   symbol: 'm7',   steps: [0, 3, 7, 10],  invNames: ['Root Position', '1st Inversion (6/5)', '2nd Inversion (4/3)', '3rd Inversion (4/2)'] },
+      { id: 'sev_mm7', family: 'seventh',name: 'Minor-Major 7',symbol: 'm(maj7)',steps: [0, 3, 7, 11],invNames: ['Root Position', '1st Inversion (6/5)', '2nd Inversion (4/3)', '3rd Inversion (4/2)'] }
+    ];
+
+    state.chordRows = [];
+    state.chordInversionMode = 'root_only';
+    state.chordSoundEnabled = true;
+    state.chordSoundMode = 'arpeggio';
+
+    function playChordRowAudio(chordRowId) {
+      if (!state.chordSoundEnabled) return;
+      const row = state.chordRows.find(r => r.id === chordRowId);
+      if (!row || !row.cells || row.cells.length === 0) return;
+
+      stopScaleAudioSequence();
+      const ctx = ensureAudio();
+      const mode = state.chordSoundMode || 'arpeggio';
+
+      const triggerNotesAt = (offsetSec, durSec) => {
+        row.cells.forEach(cell => {
+          const tId = setTimeout(() => {
+            const btnEl = document.querySelector(`[data-cell-id="${cell.id}"]`);
+            if (btnEl) {
+              btnEl.classList.add('cell-playing-note');
+              setTimeout(() => btnEl.classList.remove('cell-playing-note'), Math.min(450, durSec * 900));
+            }
+            const now = ctx.currentTime;
+            const freq = 440 * Math.pow(2, (cell.midi - 69) / 12);
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.22, now + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + durSec);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + durSec + 0.02);
+          }, Math.max(0, offsetSec * 1000));
+          state.playbackTimers.push(tId);
+        });
+      };
+
+      if (mode === 'block') {
+        triggerNotesAt(0, 0.65);
+      } else if (mode === 'both') {
+        row.cells.forEach((cell, idx) => {
+          const tId = setTimeout(() => {
+            document.querySelectorAll('.cell-playing-note').forEach(el => el.classList.remove('cell-playing-note'));
+            const btnEl = document.querySelector(`[data-cell-id="${cell.id}"]`);
+            if (btnEl) btnEl.classList.add('cell-playing-note');
+            playSingleMidi(cell.midi, 0.32);
+          }, idx * 240);
+          state.playbackTimers.push(tId);
+        });
+        const afterArpSec = (row.cells.length * 240) / 1000 + 0.15;
+        triggerNotesAt(afterArpSec, 0.65);
+      } else {
+        row.cells.forEach((cell, idx) => {
+          const tId = setTimeout(() => {
+            document.querySelectorAll('.cell-playing-note').forEach(el => el.classList.remove('cell-playing-note'));
+            const btnEl = document.querySelector(`[data-cell-id="${cell.id}"]`);
+            if (btnEl) btnEl.classList.add('cell-playing-note');
+            playSingleMidi(cell.midi, 0.34);
+          }, idx * 250);
+          state.playbackTimers.push(tId);
+        });
+      }
+    }
+
+    function formatChordSymbolByStyle(chordDef) {
+      const majMode = (document.getElementById('chordStyleMajorSelect') && document.getElementById('chordStyleMajorSelect').value) || 'tri_symbol';
+      const minMode = (document.getElementById('chordStyleMinorSelect') && document.getElementById('chordStyleMinorSelect').value) || 'minus';
+      const augMode = (document.getElementById('chordStyleAugSelect') && document.getElementById('chordStyleAugSelect').value) || 'plus';
+      const dimMode = (document.getElementById('chordStyleDimSelect') && document.getElementById('chordStyleDimSelect').value) || 'deg';
+
+      if (chordDef.id === 'tri_maj') {
+        return majMode === 'tri_symbol' ? '△' : '';
+      }
+      if (chordDef.id === 'sev_maj7') {
+        return majMode === 'tri_symbol' ? '△7' : 'maj7';
+      }
+      if (chordDef.id === 'tri_min') {
+        return minMode === 'minus' ? '-' : 'm';
+      }
+      if (chordDef.id === 'sev_min7') {
+        return minMode === 'minus' ? '-7' : 'm7';
+      }
+      if (chordDef.id === 'sev_mm7') {
+        return minMode === 'minus' ? '-(△7)' : 'm(maj7)';
+      }
+      if (chordDef.id === 'tri_aug') {
+        return augMode === 'plus' ? '+' : 'aug';
+      }
+      if (chordDef.id === 'tri_dim') {
+        return dimMode === 'deg' ? '°' : 'dim';
+      }
+      return chordDef.symbol || '';
+    }
+
+    function getSelectedChordSpecs() {
+      const specs = [];
+      const addIf = (chkId, catId) => {
+        const el = document.getElementById(chkId);
+        if (el && el.checked) {
+          const found = CHORD_CATALOG.find(c => c.id === catId);
+          if (found) specs.push(found);
+        }
+      };
+      addIf('chkTriadMajor', 'tri_maj');
+      addIf('chkTriadMinor', 'tri_min');
+      addIf('chkTriadDim', 'tri_dim');
+      addIf('chkTriadAug', 'tri_aug');
+      addIf('chkSeventhMaj7', 'sev_maj7');
+      addIf('chkSeventhDom7', 'sev_dom7');
+      addIf('chkSeventhMin7', 'sev_min7');
+      addIf('chkSeventhMinMaj7', 'sev_mm7');
+      return specs;
+    }
+
+    function invertSemitoneSteps(steps, invIdx) {
+      const arr = steps.slice();
+      const k = ((invIdx % arr.length) + arr.length) % arr.length;
+      for (let i = 0; i < k; i++) {
+        const first = arr.shift();
+        arr.push(first + 12);
+      }
+      return arr;
+    }
+
+    function spellChordNotes(rootObj, chordDef, invIdx) {
+      const letters = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+      const rootIdx = letters.indexOf(rootObj.label[0]);
+      const baseLetterSteps = chordDef.family === 'triad' ? [0, 2, 4] : [0, 2, 4, 6];
+      const letterSteps = baseLetterSteps.slice();
+      for (let i = 0; i < invIdx; i++) {
+        const f = letterSteps.shift();
+        letterSteps.push(f);
+      }
+      const semiSteps = invertSemitoneSteps(chordDef.steps, invIdx);
+      return semiSteps.map((semi, i) => ({
+        note: spellNoteFromRoot(rootObj.label, letterSteps[i], semi),
+        midi: rootObj.midi + semi
+      }));
+    }
+
+    function buildChordsBoard() {
+      stopScaleAudioSequence();
+      state.roundCounter += 1;
+      state.submitted = false;
+      state.hasCheckedOnce = false;
+      state.allSolved = false;
+      state.submitAttempts = 0;
+      state.sessionOver = false;
+      state.chordRows = [];
+      updateInlineGradeSummaryUI(0, 0, 0, false);
+
+      const allRootCandidates = ORDERED_ALL_NOTES.slice();
+      if (!state.selectedChordRootIds) {
+        state.selectedChordRootIds = new Set(allRootCandidates.map(r => r.id));
+      }
+      let pool = allRootCandidates.filter(r => state.selectedChordRootIds.has(r.id));
+      if (pool.length === 0) pool = allRootCandidates.slice();
+      let chordCandidates = pool;
+      if (pool.length > 1 && state.lastChordRootLabel) {
+        const filtered = pool.filter(r => r.label !== state.lastChordRootLabel);
+        if (filtered.length > 0) chordCandidates = filtered;
+      }
+      const rootObj = chordCandidates[Math.floor(Math.random() * chordCandidates.length)] || allRootCandidates[0];
+      state.lastChordRootLabel = rootObj.label;
+      const selectedSpecs = getSelectedChordSpecs();
+      const withInv = state.chordInversionMode === 'with_inv';
+
+      selectedSpecs.forEach((cDef, rIdx) => {
+        const invCount = withInv ? cDef.invNames.length : 1;
+        const chosenInv = withInv ? Math.floor(Math.random() * invCount) : 0;
+        const noteItems = spellChordNotes(rootObj, cDef, chosenInv);
+        const invLabel = cDef.invNames[chosenInv] || 'Root Position';
+        const symFormatted = formatChordSymbolByStyle(cDef);
+        const showParen = Boolean(document.getElementById('chkShowChordParenName') && document.getElementById('chkShowChordParenName').checked);
+        const chordTitle = showParen ? `${rootObj.label}${symFormatted} (${cDef.name})` : `${rootObj.label}${symFormatted}`;
+
+        const cells = noteItems.map((item, cIdx) => ({
+          id: `chRow_${rIdx}_c${cIdx}`,
+          answer: item.note,
+          midi: item.midi,
+          isRoot: false,
+          isBlank: true, // เว้นไว้ทุกอันเลยให้เติมเองทั้งหมด
+          userValue: '',
+          gradedStatus: null
+        }));
+
+        state.chordRows.push({
+          id: `chord_row_${cDef.id}_${rIdx}`,
+          title: chordTitle,
+          subLabel: `${cDef.family === 'triad' ? '3 โน้ต' : '4 โน้ต'} • ${invLabel}`,
+          cells
+        });
+      });
+
+      const all = getCurrentModuleCells();
+      state.activeCellId = all.length > 0 ? all[0].id : null;
+
+      document.getElementById('pageCleanTitle').textContent = `Chords Exercise #${state.roundCounter}`;
+      document.getElementById('pageCleanSubtitle').textContent = `คอร์ดราก ${rootObj.label} • ${withInv ? 'รวมพลิกกลับ' : 'ไม่พลิกกลับ'} • เติมเองทุกช่อง`;
+      document.getElementById('statusInlineHint').textContent = 'เว้นไว้ทุกช่องให้เติมเองทั้งหมด แล้วกดยืนยันคำตอบ';
+
+      updateProgressAndSubmitUI();
+      renderChordRows();
+      setExerciseStartedState(false);
+      startOrUpdateTimer();
+    }
+
+    function renderChordRows() {
+      const container = document.getElementById('chordRowsContainer');
+      if (!container) return;
+
+      container.innerHTML = state.chordRows.map(row => {
+        const colsCount = row.cells.length;
+        return `
+          <div class="grid grid-cols-[235px_repeat(${colsCount},minmax(0,1fr))] border border-slate-300 rounded-xl overflow-hidden divide-x divide-slate-300 shadow-sm">
+            <div class="row-num-cell px-3 py-2.5 flex items-center justify-between gap-1.5">
+              <div>
+                <div class="text-xs sm:text-sm font-black leading-tight">${row.title}</div>
+                <div class="text-[10px] font-bold text-slate-500 mt-0.5">${row.subLabel}</div>
+              </div>
+              <button type="button" data-play-chord="${row.id}" class="px-2 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-[11px] font-black border border-amber-300 shrink-0" title="ฟังเสียงคอร์ดแถวนี้">
+                🔊
+              </button>
+            </div>
+            ${row.cells.map((cell, cIdx) => {
+              const isLockedCorrect = cell.gradedStatus === 'correct';
+              const isActive = !state.allSolved && !isLockedCorrect && state.activeCellId === cell.id;
+              let cls = 'cell-blank';
+              let mainText = '?';
+              let subHint = `โน้ต ${cIdx + 1}`;
+
+              if (cell.gradedStatus === 'wrong') {
+                cls = 'cell-wrong cursor-pointer';
+                mainText = cell.userValue || '?';
+                subHint = 'ผิด • แก้ได้';
+              } else if (cell.userValue) {
+                cls = state.allSolved ? 'cell-correct' : 'cell-filled-draft';
+                mainText = cell.userValue;
+                subHint = state.allSolved ? 'ถูก' : 'เติมแล้ว';
+              }
+              if (isActive) {
+                cls += ' cell-active';
+              }
+
+              return `
+                <button type="button" data-cell-id="${cell.id}" class="${cls} py-3 px-1 flex flex-col items-center justify-center text-sm sm:text-base font-extrabold">
+                  <span>${mainText}</span>
+                  <span class="text-[9px] font-black leading-none mt-0.5">${subHint}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }).join('');
+
+      container.querySelectorAll('[data-play-chord]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          playChordRowAudio(btn.getAttribute('data-play-chord'));
+        });
+      });
+
+      container.querySelectorAll('[data-cell-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cid = btn.getAttribute('data-cell-id');
+          const cell = getCurrentModuleCells().find(c => c.id === cid);
+          if (!cell) return;
+          if (cell.gradedStatus === 'correct' || state.allSolved) {
+            playSingleMidi(cell.midi, 0.36);
+            return;
+          }
+          state.activeCellId = cid;
+          renderChordRows();
+        });
+      });
+    }
+
+    function updateProgressAndSubmitUI() {
+      const blanks = getCurrentModuleCells().filter(c => c.isBlank);
+      const filled = blanks.filter(c => Boolean(c.userValue));
+      document.getElementById('filledCountText').textContent = `${filled.length}/${blanks.length}`;
+
+      const submitBtn = document.getElementById('btnSubmitAnswers');
+      const canSubmit = !state.allSolved && !state.sessionOver && blanks.length > 0 && filled.length === blanks.length;
+      submitBtn.disabled = !canSubmit;
+      submitBtn.textContent = state.allSolved
+        ? `✓ ครบแล้ว (ส่ง ${state.submitAttempts} ครั้ง)`
+        : (state.hasCheckedOnce ? '✓ ตรวจคำตอบที่แก้' : '✓ ยืนยันคำตอบ');
+    }
+
+    // โหมด 1: 7 ชาร์ป 7 แฟลต
+    function buildSharpsFlatsBoard() {
+      stopScaleAudioSequence();
+            state.roundCounter += 1;
+      state.sfTables = [];
+      state.submitted = false;
+      state.hasCheckedOnce = false;
+      state.allSolved = false;
+      state.submitAttempts = 0;
+      state.sessionOver = false;
+      updateInlineGradeSummaryUI(0, 0, 0, false);
+
+      const activeDefs = [];
+      if (state.sfGridMode === 'sharps' || state.sfGridMode === 'both') {
+        activeDefs.push({ kind: 'sharps', title: 'SHARP KEY SIGNATURES', badge: '7 ชาร์ป (♯)', raw: SHARP_ROWS_DATA });
+      }
+      if (state.sfGridMode === 'flats' || state.sfGridMode === 'both') {
+        activeDefs.push({ kind: 'flats', title: 'FLAT KEY SIGNATURES', badge: '7 แฟลต (♭)', raw: FLAT_ROWS_DATA });
+      }
+
+      activeDefs.forEach(def => {
+        const rows = def.raw.map((r, rIdx) => {
+          const nLen = r.notes.length;
+          const blankCountInRow = Math.max(1, Math.min(nLen, Math.round((state.sfMissingPct / 100) * nLen)));
+          const idxs = Array.from({ length: nLen }, (_, k) => k);
+          for (let i = idxs.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [idxs[i], idxs[j]] = [idxs[j], idxs[i]];
+          }
+          const blankSet = new Set(idxs.slice(0, blankCountInRow));
+
+          const cells = r.notes.map((noteStr, cIdx) => ({
+            id: `sf_${def.kind}_r${rIdx}_c${cIdx}`,
+            answer: noteStr,
+            midi: NOTE_MIDI_MAP[noteStr] || 60,
+            isHi: r.hiSet.has(cIdx),
+            isBlank: blankSet.has(cIdx),
+            userValue: '',
+            gradedStatus: null
+          }));
+
+          return { countLabel: r.countLabel, cells };
+        });
+
+        state.sfTables.push({ id: def.kind, kind: def.kind, title: def.title, badge: def.badge, rows });
+      });
+
+      const all = getCurrentModuleCells();
+      const firstBlank = all.find(c => c.isBlank);
+      state.activeCellId = firstBlank ? firstBlank.id : null;
+
+      const modeText = state.sfGridMode === 'sharps' ? 'ทางชาร์ป (0–7♯)' : (state.sfGridMode === 'flats' ? 'ทางแฟลต (0–7♭)' : 'ทั้ง 7♯ และ 7♭');
+      document.getElementById('pageCleanTitle').textContent = `Key Signatures Grid #${state.roundCounter}`;
+      document.getElementById('pageCleanSubtitle').textContent = `${modeText} • สุ่มหายไป ${state.sfMissingPct}%`;
+      document.getElementById('statusInlineHint').textContent = 'เติมโน้ตให้ครบทุกช่องก่อน แล้วกดยืนยันคำตอบ';
+
+      updateProgressAndSubmitUI();
+      renderSharpsFlatsGrids();
+      setExerciseStartedState(false);
+      startOrUpdateTimer();
+    }
+
+    function renderSharpsFlatsGrids() {
+      const wrapper = document.getElementById('gridsSideBySideWrapper');
+      wrapper.className = state.sfTables.length === 1
+        ? 'grid grid-cols-1 max-w-4xl mx-auto w-full'
+        : 'grid grid-cols-1 xl:grid-cols-2 gap-6 min-w-[660px]';
+      wrapper.innerHTML = '';
+
+      state.sfTables.forEach(tbl => {
+        const colDiv = document.createElement('div');
+        colDiv.className = 'space-y-2';
+
+        const hiClass = tbl.kind === 'sharps' ? 'cell-sharp-hi' : 'cell-flat-hi';
+        const badgeColor = tbl.kind === 'sharps' ? 'bg-blue-600 text-white' : 'bg-rose-600 text-white';
+
+        colDiv.innerHTML = `
+          <div class="flex items-center justify-between px-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-black ${badgeColor}">${tbl.badge}</span>
+              <span class="text-sm font-black tracking-wide text-slate-900">${tbl.title}</span>
+            </div>
+            <span class="text-[11px] font-bold text-slate-400">แถว = จำนวนเครื่องหมายประจำกุญแจ</span>
+          </div>
+          <div class="border border-slate-300 rounded-xl overflow-hidden divide-y divide-slate-300 shadow-sm">
+            ${tbl.rows.map(row => `
+              <div class="grid grid-cols-[64px_repeat(7,minmax(0,1fr))] divide-x divide-slate-300">
+                <div class="row-num-cell py-2.5 px-1.5 flex items-center justify-center">
+                  <span class="text-xs sm:text-sm font-black">${row.countLabel === '0' ? '0' : row.countLabel + (tbl.kind === 'sharps' ? '♯' : '♭')}</span>
+                </div>
+                ${row.cells.map(cell => {
+                  const isLockedCorrect = cell.gradedStatus === 'correct';
+                  const isActive = !state.allSolved && !isLockedCorrect && state.activeCellId === cell.id;
+                  let cls = cell.isHi ? hiClass : 'cell-given';
+                  let mainText = cell.answer;
+                  let subHint = '';
+
+                  if (cell.isBlank) {
+                    if (false) {
+                      cls = 'cell-correct';
+                      mainText = cell.answer;
+                      subHint = cell.userValue && cell.userValue !== cell.answer ? `ตอบ: ${cell.userValue}` : 'เฉลยครู';
+                    } else if (cell.gradedStatus === 'wrong') {
+                      cls = 'cell-wrong cursor-pointer';
+                      mainText = cell.userValue || '?';
+                      subHint = 'ผิด • แก้ได้';
+                    } else if (cell.userValue) {
+                      cls = state.allSolved ? 'cell-correct' : 'cell-filled-draft';
+                      mainText = cell.userValue;
+                    } else {
+                      cls = 'cell-blank';
+                      mainText = '?';
+                    }
+                    if (isActive) {
+                      cls += ' cell-active';
+                    }
+                  }
+
+                  return `
+                    <button type="button" data-cell-id="${cell.id}" class="${cls} py-2 sm:py-2.5 px-1 flex flex-col items-center justify-center text-sm sm:text-lg font-extrabold">
+                      <span>${mainText}</span>
+                      ${subHint ? `<span class="text-[10px] font-black leading-none mt-0.5">${subHint}</span>` : ''}
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+            `).join('')}
+          </div>
+        `;
+        wrapper.appendChild(colDiv);
+      });
+
+      wrapper.querySelectorAll('[data-cell-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cid = btn.getAttribute('data-cell-id');
+          const cell = getCurrentModuleCells().find(c => c.id === cid);
+          if (!cell) return;
+          if (!cell.isBlank || cell.gradedStatus === 'correct' || state.allSolved) {
+            playNoteNameAudio(cell.answer);
+            return;
+          }
+          state.activeCellId = cid;
+          renderSharpsFlatsGrids();
+        });
+      });
+    }
+
+    // โหมด 2: สเกลไมเนอร์
+    function getSelectedMinorTypes() {
+      const list = [];
+      if (document.getElementById('chkMinorMelodic').checked) list.push(MINOR_SCALE_FORMULAS.melodic);
+      if (document.getElementById('chkMinorHarmonic').checked) list.push(MINOR_SCALE_FORMULAS.harmonic);
+      if (document.getElementById('chkMinorNatural').checked) list.push(MINOR_SCALE_FORMULAS.natural);
+      if (list.length === 0) {
+        document.getElementById('chkMinorMelodic').checked = true;
+        list.push(MINOR_SCALE_FORMULAS.melodic);
+      }
+      return list;
+    }
+
+    function resetMinorSessionAndStart() {
+      stopTimer();
+      stopScaleAudioSequence();
+            state.sessionQuestionIndex = 1;
+      state.sessionCompletedCount = 0;
+      state.sessionPerfectCount = 0;
+      state.sessionOver = false;
+      state.countdownEndTimeMs = null;
+        state.fixedStartTimeMs = null;
+      state.fixedStartTimeMs = null;
+      state.startTimeMs = null;
+      generateNewMinorRound(true);
+    }
+
+    function buildKeySigVisualSymbols(item) {
+      if (item.group === 'natural') {
+        return `<span class="text-base font-black leading-none">♮</span>`;
+      }
+      const sym = item.group === 'flat' ? '♭' : '♯';
+      const flatOffsets = [0, -5, 2, -3, 3, -2, 4];
+      const sharpOffsets = [-4, 1, -6, -1, 4, -3, 2];
+      const offsets = item.group === 'flat' ? flatOffsets : sharpOffsets;
+      let html = '<span class="inline-flex items-center tracking-tighter font-black text-sm leading-none">';
+      for (let i = 0; i < item.count; i++) {
+        html += `<span style="transform: translateY(${offsets[i]}px); display:inline-block;">${sym}</span>`;
+      }
+      html += '</span>';
+      return html;
+    }
+
+    function renderMtKeySignaturesPicker() {
+      const container = document.getElementById('mtKeySignaturesPickerGrid');
+      if (!container) return;
+
+      const noteItems = ORDERED_ALL_NOTES.filter(k => k.label !== 'D♯');
+      container.className = 'bg-slate-950 border border-slate-800 rounded-2xl p-2.5 grid grid-cols-5 gap-2';
+
+      container.innerHTML = noteItems.map(item => {
+        const isChecked = state.selectedScaleNoteLabels.has(item.label);
+        const cls = isChecked
+          ? 'bg-[#5458e8] text-white border-[#7579f2] shadow-sm'
+          : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-600';
+
+        return `
+          <button type="button" data-scnote-label="${item.label}" class="mt-keysig-item ${cls} border rounded-xl py-2.5 px-2 text-xs font-black text-center transition">
+            ${item.label}
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('selectedKeysSummaryText').textContent = `เลือกไว้ ${state.selectedScaleNoteLabels.size} / ${noteItems.length} โน้ต`;
+
+      container.querySelectorAll('[data-scnote-label]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const lbl = btn.getAttribute('data-scnote-label');
+          if (state.selectedScaleNoteLabels.has(lbl)) {
+            if (state.selectedScaleNoteLabels.size > 1) state.selectedScaleNoteLabels.delete(lbl);
+          } else {
+            state.selectedScaleNoteLabels.add(lbl);
+          }
+          renderMtKeySignaturesPicker();
+          resetMinorSessionAndStart();
+        });
+      });
+    }
+
+    document.querySelectorAll('.scfamily-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const chosenFam = btn.getAttribute('data-scfamily');
+        state.scaleFamily = chosenFam === 'major' ? 'major' : 'minor';
+        document.querySelectorAll('.scfamily-btn').forEach(b => {
+          const active = b.getAttribute('data-scfamily') === state.scaleFamily;
+          b.className = active
+            ? 'scfamily-btn py-2 px-2.5 rounded-lg font-extrabold bg-blue-600 text-white text-center'
+            : 'scfamily-btn py-2 px-2.5 rounded-lg font-bold text-slate-300 hover:text-white text-center';
+        });
+        const minorBox = document.getElementById('minorSubSettingsBox');
+        if (minorBox) minorBox.classList.toggle('hidden', state.scaleFamily !== 'minor');
+        sideDrawerTitle.textContent = state.scaleFamily === 'major' ? 'ตั้งค่าสเกลเมเจอร์ (Major)' : 'ตั้งค่าสเกลไมเนอร์ (Minor)';
+        if (state.activeModule !== 'minor_scales') {
+          switchModule('minor_scales');
+        } else {
+          resetMinorSessionAndStart();
+        }
+      });
+    });
+
+    function startExerciseNow() {
+      if (state.exerciseStarted) return;
+      if (typeof closeSideDrawer === 'function') {
+        closeSideDrawer();
+      }
+      setExerciseStartedState(true);
+      if (state.activeModule === 'minor_scales' && typeof window.__syncScaleHeaderHints === 'function') {
+        window.__syncScaleHeaderHints();
+      }
+      startOrUpdateTimer();
+    }
+
+    document.getElementById('btnStartExerciseGate').addEventListener('click', startExerciseNow);
+
+    document.getElementById('btnEnterSFMode').addEventListener('click', () => {
+      switchModule('sharps_flats');
+      closeSideDrawer();
+    });
+
+    document.getElementById('btnEnterScaleMode').addEventListener('click', () => {
+      switchModule('minor_scales');
+      closeSideDrawer();
+    });
+
+    function generateNewMinorRound(isFreshSession = false) {
+      stopScaleAudioSequence();
+            if (state.sessionOver && !isFreshSession) {
+        resetMinorSessionAndStart();
+        return;
+      }
+
+      state.roundCounter += 1;
+      const selectedTypes = state.scaleFamily === 'major'
+        ? [MAJOR_SCALE_FORMULA]
+        : getSelectedMinorTypes();
+      if (!state.selectedScaleNoteLabels || state.selectedScaleNoteLabels.size === 0) {
+        state.selectedScaleNoteLabels = new Set(['A', 'C', 'D', 'E', 'F', 'G', 'B']);
+      }
+      let pool = ORDERED_ALL_NOTES.filter(k => state.selectedScaleNoteLabels.has(k.label) && k.label !== 'D♯');
+      if (pool.length === 0) pool = ORDERED_ALL_NOTES.filter(k => k.label !== 'D♯');
+
+      let candidates = pool;
+      if (state.currentRoot && candidates.length > 1) {
+        candidates = candidates.filter(r => r.label !== state.currentRoot.label);
+      }
+      const rootObj = candidates[Math.floor(Math.random() * candidates.length)] || ORDERED_ALL_NOTES[0];
+      state.currentRoot = rootObj;
+      state.submitted = false;
+      state.hasCheckedOnce = false;
+      state.allSolved = false;
+      state.submitAttempts = 0;
+      state.minorRows = [];
+      updateInlineGradeSummaryUI(0, 0, 0, false);
+
+      const dirLabel = state.minorDirection === 'asc' ? 'ขาไปอย่างเดียว (↑)' : 'ขาไปกลับ (↑↓)';
+      const famTitle = state.scaleFamily === 'major' ? 'Major Scale' : 'Minor Scale';
+      const typeNamesOnly = selectedTypes.map(t => t.title).join(' • ');
+
+      function syncScaleHeaderHints() {
+        document.getElementById('pageCleanTitle').textContent = `${famTitle} Exercise #${state.roundCounter}`;
+        document.getElementById('pageCleanSubtitle').textContent = `${typeNamesOnly} • ${dirLabel}`;
+        if (!state.exerciseStarted) {
+          document.getElementById('statusInlineHint').textContent = 'กดปุ่ม "▶ กดเริ่มแบบฝึกหัด" หรือกด R / Enter เพื่อเริ่มทำ';
+        } else {
+          document.getElementById('statusInlineHint').textContent = 'เติมโน้ตให้ครบทุกช่อง แล้วกดยืนยันคำตอบ';
+        }
+      }
+      window.__syncScaleHeaderHints = syncScaleHeaderHints;
+      syncScaleHeaderHints();
+
+      const useL3 = !document.getElementById('chkScaleLayer3') || document.getElementById('chkScaleLayer3').checked;
+      const useL4 = !document.getElementById('chkScaleLayer4') || document.getElementById('chkScaleLayer4').checked;
+      const useTension = !document.getElementById('chkScaleLayerTension') || document.getElementById('chkScaleLayerTension').checked;
+      const activeLayers = (useL3 || useL4 || useTension)
+        ? { l3: useL3, l4: useL4, tension: useTension }
+        : { l3: true, l4: false, tension: false };
+
+      selectedTypes.forEach((fObj, rIdx) => {
+        const seqItems = buildScaleSequenceWithMidis(rootObj, fObj, state.minorDirection, state.melodicDescMode);
+        const cells = seqItems.map((item, cIdx) => {
+          const degInOct = (cIdx % 7) + 1; // 1..7 (and octave 8/1)
+          const isTriadNote = [1, 3, 5].includes(degInOct);
+          const isSeventhNote = degInOct === 7;
+          const isTensionNote = [2, 4, 6].includes(degInOct);
+          const shouldBeBlank = (activeLayers.l3 && isTriadNote)
+            || (activeLayers.l4 && isSeventhNote)
+            || (activeLayers.tension && isTensionNote);
+
+          return {
+            id: `mRow_${rIdx}_c${cIdx}`,
+            answer: item.note,
+            midi: item.midi,
+            isRoot: !shouldBeBlank && cIdx === 0,
+            isBlank: shouldBeBlank,
+            userValue: '',
+            gradedStatus: null
+          };
+        });
+
+        state.minorRows.push({
+          id: `row_${fObj.id}`,
+          typeId: fObj.id,
+          title: `${rootObj.label} ${fObj.title}`,
+          formulaDesc: fObj.formulaDesc,
+          cells
+        });
+      });
+
+      const all = getCurrentModuleCells();
+      const firstBlank = all.find(c => c.isBlank);
+      state.activeCellId = firstBlank ? firstBlank.id : null;
+
+      updateProgressAndSubmitUI();
+      renderMinorRows();
+      setExerciseStartedState(false);
+      startOrUpdateTimer();
+    }
+
+    function renderMinorRows() {
+      const container = document.getElementById('minorRowsContainer');
+      const colsCount = state.minorDirection === 'both' ? 15 : 7;
+      const showFormula = document.getElementById('chkShowFormulaHint').checked;
+
+      container.innerHTML = state.minorRows.map(row => `
+        <div class="space-y-1">
+          <div class="grid grid-cols-[205px_repeat(${colsCount},minmax(0,1fr))] border border-slate-300 rounded-xl overflow-hidden divide-x divide-slate-300 shadow-sm">
+            <div class="row-num-cell px-2.5 py-2.5 flex items-center justify-between gap-1.5">
+              <div>
+                <div class="text-xs sm:text-sm font-black leading-tight">${row.title}</div>
+                <div class="text-[10px] font-bold text-slate-400">${state.minorDirection === 'asc' ? 'ขาไป (1→7)' : 'ขาไปกลับ (1→8→1)'}</div>
+              </div>
+              <button type="button" data-play-row="${row.id}" class="px-2 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[11px] font-black border border-emerald-300 shrink-0" title="ฟังเสียงสเกลแถวนี้">
+                🔊
+              </button>
+            </div>
+            ${row.cells.map((cell, cIdx) => {
+              const isLockedCorrect = cell.gradedStatus === 'correct';
+              const isActive = !state.allSolved && !isLockedCorrect && state.activeCellId === cell.id;
+              const isTurn8 = state.minorDirection === 'both' && cIdx === 7;
+              let cls = 'cell-root';
+              let mainText = cell.answer;
+              let subHint = isTurn8 ? 'จุดกลับ 8' : '';
+
+              if (cell.isBlank) {
+                if (false) {
+                  cls = 'cell-correct';
+                  mainText = cell.answer;
+                  subHint = cell.userValue && cell.userValue !== cell.answer ? `ตอบ: ${cell.userValue}` : 'เฉลยครู';
+                } else if (cell.gradedStatus === 'wrong') {
+                  cls = 'cell-wrong cursor-pointer';
+                  mainText = cell.userValue || '?';
+                  subHint = isTurn8 ? 'จุดกลับ 8 • ผิด' : 'ผิด • แก้ได้';
+                } else if (cell.userValue) {
+                  cls = state.allSolved ? 'cell-correct' : 'cell-filled-draft';
+                  mainText = cell.userValue;
+                  if (isTurn8 && !state.allSolved) subHint = 'จุดกลับ 8';
+                } else {
+                  cls = 'cell-blank';
+                  mainText = '?';
+                }
+                if (isActive) {
+                  cls += ' cell-active';
+                }
+              }
+
+              if (isTurn8) {
+                cls += ' ring-2 ring-amber-400 border-amber-500';
+              }
+
+              return `
+                <button type="button" data-cell-id="${cell.id}" class="${cls} py-3 px-1 flex flex-col items-center justify-center text-sm sm:text-base font-extrabold">
+                  <span>${mainText}</span>
+                  ${subHint ? `<span class="text-[9px] font-black leading-none mt-0.5 ${isTurn8 ? 'text-amber-700' : ''}">${subHint}</span>` : ''}
+                </button>
+              `;
+            }).join('')}
+          </div>
+          ${showFormula ? `<div class="text-[11px] font-bold text-indigo-700 px-2">💡 ${row.title}: ${row.formulaDesc}</div>` : ''}
+        </div>
+      `).join('');
+
+      container.querySelectorAll('[data-play-row]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          stopScaleAudioSequence();
+          playScaleRowSequence(btn.getAttribute('data-play-row'), 0);
+        });
+      });
+
+      container.querySelectorAll('[data-cell-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cid = btn.getAttribute('data-cell-id');
+          const cell = getCurrentModuleCells().find(c => c.id === cid);
+          if (!cell) return;
+          if (!cell.isBlank || cell.gradedStatus === 'correct' || state.allSolved) {
+            playSingleMidi(cell.midi, 0.36);
+            return;
+          }
+          state.activeCellId = cid;
+          renderMinorRows();
+        });
+      });
+    }
+
+    function handleCountdownTimeUp() {
+      state.sessionOver = true;
+      state.allSolved = true;
+      renderActiveBoard();
+      updateProgressAndSubmitUI();
+      updateInlineGradeSummaryUI(state.sessionCompletedCount, 0, state.sessionCompletedCount, true);
+      const summaryMsg = `⏳ หมดเวลา ${formatThaiDuration(state.countdownLimitSec)}! ทำสำเร็จทั้งหมด ${state.sessionCompletedCount} ข้อ (ถูกสมบูรณ์ ${state.sessionPerfectCount} ข้อ)`;
+      document.getElementById('statusInlineHint').textContent = summaryMsg;
+
+      const modalEl = document.getElementById('countdownResultModal');
+      const titleEl = modalEl ? modalEl.querySelector('h2') : null;
+      if (titleEl) titleEl.textContent = 'หมดเวลาแล้ว!';
+      const compEl = document.getElementById('cdResultCompletedNum');
+      const perfEl = document.getElementById('cdResultPerfectNum');
+      const timeEl = document.getElementById('cdResultTimeText');
+      if (compEl) compEl.textContent = `${state.sessionCompletedCount} ข้อ`;
+      if (perfEl) perfEl.textContent = `${state.sessionPerfectCount} ข้อ`;
+      if (timeEl) timeEl.textContent = `จับเวลาครบ ${formatThaiDuration(state.countdownLimitSec)}`;
+      if (modalEl) modalEl.classList.remove('hidden');
+    }
+
+    function handleNotePress(chosenNote) {
+      playNoteNameAudio(chosenNote);
+      if (state.allSolved || state.sessionOver) return;
+
+      const all = getCurrentModuleCells();
+      let target = all.find(c => c.id === state.activeCellId && c.isBlank && c.gradedStatus !== 'correct');
+      if (!target) {
+        target = all.find(c => c.isBlank && c.gradedStatus !== 'correct' && (!c.userValue || c.gradedStatus === 'wrong'))
+              || all.find(c => c.isBlank && c.gradedStatus !== 'correct');
+      }
+      if (!target) return;
+
+      target.userValue = chosenNote;
+      if (target.gradedStatus === 'wrong') {
+        target.gradedStatus = null;
+      }
+
+      const editableBlanks = all.filter(c => c.isBlank && c.gradedStatus !== 'correct');
+      const curIdx = editableBlanks.findIndex(c => c.id === target.id);
+      let nextCell = null;
+      for (let offset = 1; offset <= editableBlanks.length; offset++) {
+        const cand = editableBlanks[(curIdx + offset) % editableBlanks.length];
+        if (!cand.userValue || cand.gradedStatus === null) {
+          nextCell = cand;
+          break;
+        }
+      }
+      state.activeCellId = nextCell ? nextCell.id : target.id;
+
+      updateProgressAndSubmitUI();
+      renderActiveBoard();
+
+      const blanks = all.filter(c => c.isBlank);
+      const filledCount = blanks.filter(c => Boolean(c.userValue)).length;
+      if (filledCount === blanks.length) {
+        document.getElementById('statusInlineHint').textContent = state.hasCheckedOnce
+          ? 'แก้ไขครบแล้ว! กดปุ่ม "✓ ตรวจคำตอบที่แก้" เพื่อตรวจอีกครั้ง'
+          : 'เติมครบทุกช่องแล้ว! กดปุ่ม "✓ ยืนยันคำตอบ" เพื่อตรวจผล';
+      } else {
+        document.getElementById('statusInlineHint').textContent = `เติมแล้ว ${filledCount}/${blanks.length} ช่อง (ยังไม่เฉลยจนกว่าจะกดยืนยัน)`;
+      }
+    }
+
+    function clearSelectedDraftCell() {
+      if (state.allSolved || state.sessionOver) return;
+      const target = getCurrentModuleCells().find(c => c.id === state.activeCellId && c.isBlank && c.gradedStatus !== 'correct');
+      if (!target) return;
+      target.userValue = '';
+      target.gradedStatus = null;
+      updateProgressAndSubmitUI();
+      renderActiveBoard();
+    }
+
+    function submitAllAnswers() {
+      if (state.allSolved || state.sessionOver) return;
+      const all = getCurrentModuleCells();
+      const blanks = all.filter(c => c.isBlank);
+      if (blanks.length === 0 || blanks.some(c => !c.userValue)) return;
+
+      state.hasCheckedOnce = true;
+      state.submitAttempts += 1;
+
+      let correctCnt = 0;
+      let wrongCnt = 0;
+      blanks.forEach(cell => {
+        if (cell.userValue === cell.answer) {
+          cell.gradedStatus = 'correct';
+          correctCnt += 1;
+        } else {
+          cell.gradedStatus = 'wrong';
+          wrongCnt += 1;
+        }
+      });
+
+      const isPerfect = wrongCnt === 0;
+      state.allSolved = isPerfect;
+
+      if (!isPerfect) {
+        const firstWrong = blanks.find(c => c.gradedStatus === 'wrong');
+        state.activeCellId = firstWrong ? firstWrong.id : null;
+      } else {
+        state.activeCellId = null;
+      }
+
+      updateProgressAndSubmitUI();
+      updateInlineGradeSummaryUI(correctCnt, wrongCnt, blanks.length, isPerfect);
+      renderActiveBoard();
+
+      if (!isPerfect) {
+        const wrongList = collectWrongLabelsList();
+        const previewWrong = wrongList.slice(0, 6).join(', ') + (wrongList.length > 6 ? ` และอีก ${wrongList.length - 6} ช่อง` : '');
+        document.getElementById('statusInlineHint').textContent =
+          `ส่งครั้งที่ ${state.submitAttempts}: ถูก ${correctCnt}/${blanks.length} • ผิด ${wrongCnt} ช่อง → ผิดที่: ${previewWrong} (คลิกแก้ช่องแดงแล้วกดส่งใหม่ได้)`;
+        return;
+      }
+
+      state.sessionCompletedCount += 1;
+      state.sessionPerfectCount += 1;
+      updateSessionBadgeUI();
+
+      if (state.minorTimerMode === 'stopwatch') {
+        document.getElementById('statusInlineHint').textContent =
+          `🎉 ถูกต้องครบทั้ง ${blanks.length} ช่อง! (ส่ง ${state.submitAttempts} ครั้ง) กำลังไปข้อถัดไป...`;
+        setTimeout(() => {
+          if (state.minorTimerMode === 'stopwatch') {
+            generateRoundForActiveModule(false);
+            setExerciseStartedState(true);
+            startOrUpdateTimer();
+          }
+        }, 450);
+        return;
+      }
+
+      if (state.minorTimerMode === 'countdown') {
+        document.getElementById('statusInlineHint').textContent =
+          `🔥 ถูกต้องครบทุกช่อง! (ทำได้ ${state.sessionCompletedCount} ข้อ) กำลังไปข้อถัดไปทันที...`;
+        setTimeout(() => {
+          if (!state.sessionOver && state.minorTimerMode === 'countdown') {
+            state.sessionQuestionIndex += 1;
+            updateSessionBadgeUI();
+            generateRoundForActiveModule(false);
+            setExerciseStartedState(true);
+            startOrUpdateTimer();
+          }
+        }, 450);
+      } else if (state.minorTimerMode === 'fixed_count') {
+        if (state.sessionCompletedCount >= state.fixedTargetCount) {
+          state.sessionOver = true;
+          stopTimer();
+          const totalElapsedSec = state.fixedStartTimeMs ? ((performance.now() - state.fixedStartTimeMs) / 1000) : 0;
+          const totalTimeStr = formatThaiDuration(totalElapsedSec);
+          document.getElementById('timerDisplay').textContent = formatClock(totalElapsedSec);
+          const doneMsg = `🎯 ครบทั้ง ${state.fixedTargetCount} ข้อแล้ว! เวลารวม ${totalTimeStr} • ข้อล่าสุดกดส่งไป ${state.submitAttempts} ครั้ง`;
+          document.getElementById('statusInlineHint').textContent = doneMsg;
+
+          const modalEl = document.getElementById('countdownResultModal');
+          const titleEl = modalEl ? modalEl.querySelector('h2') : null;
+          const compEl = document.getElementById('cdResultCompletedNum');
+          const perfEl = document.getElementById('cdResultPerfectNum');
+          const timeEl = document.getElementById('cdResultTimeText');
+          if (titleEl) titleEl.textContent = `ทำครบ ${state.fixedTargetCount} ข้อแล้ว!`;
+          if (compEl) compEl.textContent = `${state.sessionCompletedCount} ข้อ`;
+          if (perfEl) perfEl.textContent = `${state.sessionPerfectCount} ข้อ`;
+          if (timeEl) timeEl.textContent = `โหมดจำกัดจำนวนข้อ • เวลารวม ${totalTimeStr}`;
+          if (modalEl) modalEl.classList.remove('hidden');
+        } else {
+          document.getElementById('statusInlineHint').textContent =
+            `🎉 ผ่านข้อที่ ${state.sessionCompletedCount}/${state.fixedTargetCount} แล้ว! (กดส่งไป ${state.submitAttempts} ครั้ง) กำลังขึ้นข้อถัดไป...`;
+          setTimeout(() => {
+            if (!state.sessionOver) {
+              state.sessionQuestionIndex += 1;
+              updateSessionBadgeUI();
+              generateRoundForActiveModule(false);
+              setExerciseStartedState(true);
+              startOrUpdateTimer();
+            }
+          }, 700);
+        }
+      }
+    }
+
+    // ลิ้นชักด้านซ้ายและสลับบทเรียน
+    const sideDrawer = document.getElementById('edgeSideDrawer');
+    const sideDrawerTitle = document.getElementById('edgeSideDrawerTitle');
+
+    function closeSideDrawer() {
+      state.activeSideTab = null;
+      sideDrawer.classList.add('hidden');
+      document.querySelectorAll('.side-rail-btn').forEach(b => {
+        b.classList.remove('bg-blue-600', 'text-white');
+        b.classList.add('bg-slate-800/90', 'text-slate-200');
+      });
+    }
+
+    function openSideDrawer(tabKey) {
+      if (tabKey === 'sf_topic' && state.activeModule !== 'sharps_flats') {
+        switchModule('sharps_flats');
+      } else if (tabKey === 'scale_topic' && state.activeModule !== 'minor_scales') {
+        switchModule('minor_scales');
+      } else if (tabKey === 'chord_topic' && state.activeModule !== 'chords') {
+        switchModule('chords');
+      } else if (tabKey === 'interval_topic' && state.activeModule !== 'intervals') {
+        switchModule('intervals');
+      }
+
+      if (state.activeSideTab === tabKey) {
+        closeSideDrawer();
+        return;
+      }
+      state.activeSideTab = tabKey;
+      const titles = {
+        sf_topic: 'ตั้งค่า 7 ชาร์ป 7 แฟลต',
+        scale_topic: state.scaleFamily === 'major' ? 'ตั้งค่าสเกลเมเจอร์ (Major)' : 'ตั้งค่าสเกลไมเนอร์ (Minor)',
+        chord_topic: 'ตั้งค่าคอร์ด (3 โน้ต / 4 โน้ต / พลิกกลับ)',
+        interval_topic: 'ตั้งค่าขั้นคู่ (2–8 / ขาขึ้น-ขาลง / คุณภาพขั้นคู่)',
+        timer: 'การจับเวลา & จำนวนข้อ',
+        tools: 'เครื่องมือสอน & โทนสี'
+      };
+      sideDrawerTitle.textContent = titles[tabKey] || 'ตั้งค่า';
+      sideDrawer.classList.remove('hidden');
+
+      document.querySelectorAll('.side-rail-btn').forEach(b => {
+        const active = b.getAttribute('data-sidetab') === tabKey;
+        b.classList.toggle('bg-blue-600', active);
+        b.classList.toggle('text-white', active);
+        b.classList.toggle('bg-slate-800/90', !active);
+        b.classList.toggle('text-slate-200', !active);
+      });
+
+      document.querySelectorAll('.side-drawer-panel').forEach(p => {
+        p.classList.toggle('hidden', p.id !== `sidePanel_${tabKey}`);
+      });
+    }
+
+    document.querySelectorAll('.side-rail-btn').forEach(btn => {
+      btn.addEventListener('click', () => openSideDrawer(btn.getAttribute('data-sidetab')));
+    });
+    document.getElementById('btnCloseSideDrawer').addEventListener('click', closeSideDrawer);
+
+    function switchModule(modName) {
+      const keepSessionTimer = (state.minorTimerMode === 'countdown' && state.countdownEndTimeMs && !state.sessionOver)
+        || (state.minorTimerMode === 'fixed_count' && state.fixedStartTimeMs && !state.sessionOver);
+      if (!keepSessionTimer) {
+        stopTimer();
+        state.sessionOver = false;
+        state.countdownEndTimeMs = null;
+        state.fixedStartTimeMs = null;
+        state.sessionQuestionIndex = 1;
+        state.sessionCompletedCount = 0;
+        state.sessionPerfectCount = 0;
+      }
+      stopScaleAudioSequence();
+      state.activeModule = modName;
+      state.submitted = false;
+      state.roundCounter = 0;
+
+      document.querySelectorAll('.module-tab-btn').forEach(btn => {
+        const active = btn.getAttribute('data-module') === modName;
+        btn.className = active
+          ? 'module-tab-btn px-3 py-1.5 rounded-xl font-extrabold bg-blue-600 text-white shadow transition'
+          : 'module-tab-btn px-3 py-1.5 rounded-xl font-bold text-slate-300 hover:bg-slate-800 hover:text-white transition';
+      });
+
+      document.querySelectorAll('.drawer-mod-btn').forEach(btn => {
+        const active = btn.getAttribute('data-module') === modName;
+        btn.className = active
+          ? 'drawer-mod-btn w-full p-3 rounded-2xl bg-blue-600 text-white font-extrabold text-left border border-blue-400/50 transition'
+          : 'drawer-mod-btn w-full p-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-extrabold text-left border border-slate-700 transition';
+      });
+
+      const isSF = modName === 'sharps_flats';
+      const isMinor = modName === 'minor_scales';
+      const isChords = modName === 'chords';
+      const isIntervals = modName === 'intervals';
+      document.getElementById('board_sharps_flats').classList.toggle('hidden', !isSF);
+      document.getElementById('board_minor_scales').classList.toggle('hidden', !isMinor);
+      document.getElementById('board_chords').classList.toggle('hidden', !isChords);
+      document.getElementById('board_intervals').classList.toggle('hidden', !isIntervals);
+      document.getElementById('btnPlayAllScalesAudio').classList.toggle('hidden', !isMinor);
+
+      const noteRowsEl = document.getElementById('noteAnswerPad');
+      const intPadEl = document.getElementById('intervalAnswerPad');
+      const pickerTitleEl = document.getElementById('pickerHeaderTitleText');
+      if (noteRowsEl) noteRowsEl.classList.toggle('hidden', isIntervals);
+      if (intPadEl) intPadEl.classList.toggle('hidden', !isIntervals);
+      if (pickerTitleEl) pickerTitleEl.textContent = isIntervals ? '⠿ เลือกขั้นคู่' : '⠿ เลือกโน้ต';
+      if (typeof setPickerVisible === 'function') setPickerVisible(state.pickerVisible);
+
+      if (isSF) {
+        buildSharpsFlatsBoard();
+      } else if (isMinor) {
+        resetMinorSessionAndStart();
+      } else if (isChords) {
+        buildChordsBoard();
+      } else if (isIntervals) {
+        buildIntervalBoard();
+      }
+    }
+
+    document.querySelectorAll('[data-module]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchModule(btn.getAttribute('data-module'));
+        closeSideDrawer();
+      });
+    });
+
+    // แถบควบคุมลอยด้านล่าง + หน้าต่างลอยเลือกโน้ต
+    const pickerEl = document.getElementById('floatingNotePicker');
+    const pickerScaleBadge = document.getElementById('pickerScaleBadge');
+    const togglePickerBtn = document.getElementById('btnToggleFloatingPicker');
+
+    function setPickerVisible(vis) {
+      state.pickerVisible = vis;
+      pickerEl.classList.toggle('hidden', !vis);
+      const padNoun = state.activeModule === 'intervals' ? 'แท็บขั้นคู่' : 'แท็บโน้ต';
+      togglePickerBtn.textContent = vis ? `🎹 ${padNoun}: เปิด` : `🎹 ${padNoun}: ปิด`;
+    }
+
+    document.getElementById('btnMinimizePickerTab').addEventListener('click', () => setPickerVisible(false));
+    togglePickerBtn.addEventListener('click', () => setPickerVisible(!state.pickerVisible));
+
+    function setPickerScale(sc) {
+      const clamped = Math.max(0.75, Math.min(1.5, Number(sc.toFixed(2))));
+      state.pickerScale = clamped;
+      pickerEl.style.transform = `scale(${clamped})`;
+      pickerScaleBadge.textContent = `${Math.round(clamped * 100)}%`;
+    }
+    document.getElementById('btnPickerScaleDown').addEventListener('click', () => setPickerScale(state.pickerScale - 0.1));
+    document.getElementById('btnPickerScaleUp').addEventListener('click', () => setPickerScale(state.pickerScale + 0.1));
+    document.getElementById('btnPickerScaleReset').addEventListener('click', () => {
+      setPickerScale(1.0);
+      pickerEl.style.left = '';
+      pickerEl.style.top = '';
+      pickerEl.style.right = '18px';
+      pickerEl.style.bottom = '88px';
+    });
+
+    function makeElementDraggable(el, handleEl) {
+      let dragging = false, sx = 0, sy = 0, ol = 0, ot = 0;
+      handleEl.addEventListener('mousedown', (e) => {
+        if (e.target.closest('button')) return;
+        dragging = true;
+        const rect = el.getBoundingClientRect();
+        ol = rect.left;
+        ot = rect.top;
+        sx = e.clientX;
+        sy = e.clientY;
+        el.style.transform = el.id === 'floatingNotePicker' ? `scale(${state.pickerScale})` : 'none';
+        el.style.right = 'auto';
+        el.style.bottom = 'auto';
+        el.style.left = `${ol}px`;
+        el.style.top = `${ot}px`;
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        el.style.left = `${ol + (e.clientX - sx)}px`;
+        el.style.top = `${ot + (e.clientY - sy)}px`;
+      });
+      window.addEventListener('mouseup', () => { dragging = false; });
+    }
+
+    makeElementDraggable(pickerEl, document.getElementById('pickerDragHeader'));
+    makeElementDraggable(document.getElementById('floatingBottomBar'), document.getElementById('bottomBarDragHandle'));
+
+    const collapseBottomBtn = document.getElementById('btnCollapseBottomBar');
+    const bottomControlsRow = document.getElementById('bottomBarControlsRow');
+    collapseBottomBtn.addEventListener('click', () => {
+      state.bottomBarCollapsed = !state.bottomBarCollapsed;
+      bottomControlsRow.classList.toggle('hidden', state.bottomBarCollapsed);
+      collapseBottomBtn.textContent = state.bottomBarCollapsed ? '▲ กางแถบควบคุม' : '▼ พับเก็บ';
+    });
+
+
+    document.querySelectorAll('#floatingNotePicker .mt-key-btn').forEach(btn => {
+      btn.addEventListener('click', () => handleNotePress(btn.getAttribute('data-note')));
+    });
+
+    document.getElementById('btnSubmitAnswers').addEventListener('click', submitAllAnswers);
+    document.getElementById('btnClearSelectedDraft').addEventListener('click', clearSelectedDraftCell);
+
+    function generateRoundForActiveModule(isFreshSession = false) {
+      if (state.activeModule === 'sharps_flats') buildSharpsFlatsBoard();
+      else if (state.activeModule === 'chords') buildChordsBoard();
+      else if (state.activeModule === 'intervals') buildIntervalBoard();
+      else generateNewMinorRound(isFreshSession);
+    }
+
+    const advanceCountdownNextQuestion = () => {
+      if (state.sessionOver) return;
+      if (!state.allSolved) {
+        document.getElementById('statusInlineHint').textContent =
+          'ต้องตอบข้อนี้ให้ถูกครบทุกช่องก่อน จึงจะไปข้อถัดไปได้ครับ';
+        return;
+      }
+      state.sessionQuestionIndex += 1;
+      updateSessionBadgeUI();
+      generateRoundForActiveModule(false);
+      setExerciseStartedState(true);
+      startOrUpdateTimer();
+    };
+
+    const triggerNewRound = () => {
+      if (!state.sessionOver && state.hasCheckedOnce && !state.allSolved) {
+        document.getElementById('statusInlineHint').textContent =
+          'ต้องแก้คำตอบที่ผิดให้ถูกต้องครบทุกช่องก่อน จึงจะไปข้อถัดไปได้ครับ';
+        return;
+      }
+      if (state.minorTimerMode === 'countdown' && state.sessionOver) {
+        const m = document.getElementById('countdownResultModal');
+        if (m) m.classList.add('hidden');
+        resetMinorSessionAndStart();
+        setExerciseStartedState(true);
+        startOrUpdateTimer();
+        return;
+      }
+      generateRoundForActiveModule(false);
+      if (state.exerciseStarted) {
+        setExerciseStartedState(true);
+        startOrUpdateTimer();
+      }
+    };
+    document.getElementById('btnStartNewGame').addEventListener('click', triggerNewRound);
+    document.getElementById('btnSideDrawerRandomNow').addEventListener('click', triggerNewRound);
+
+    const btnCdClose = document.getElementById('btnCdResultClose');
+    if (btnCdClose) {
+      btnCdClose.addEventListener('click', () => {
+        const m = document.getElementById('countdownResultModal');
+        if (m) m.classList.add('hidden');
+      });
+    }
+    const btnCdRestart = document.getElementById('btnCdResultRestart');
+    if (btnCdRestart) {
+      btnCdRestart.addEventListener('click', () => {
+        const m = document.getElementById('countdownResultModal');
+        if (m) m.classList.add('hidden');
+        resetMinorSessionAndStart();
+        setExerciseStartedState(true);
+        startOrUpdateTimer();
+      });
+    }
+
+    document.querySelectorAll('.gmode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.sfGridMode = btn.getAttribute('data-gmode');
+        document.querySelectorAll('.gmode-btn').forEach(b => {
+          const active = b.getAttribute('data-gmode') === state.sfGridMode;
+          b.className = active
+            ? 'gmode-btn py-2 px-3 rounded-xl font-extrabold bg-blue-600 text-white text-left'
+            : 'gmode-btn py-2 px-3 rounded-xl font-bold bg-slate-900 text-slate-300 hover:text-white text-left border border-slate-800';
+        });
+        buildSharpsFlatsBoard();
+      });
+    });
+
+    const pctSlider = document.getElementById('missingPctSlider');
+    const pctLabel = document.getElementById('missingPctLabel');
+    const setMissingPct = (val) => {
+      const clamped = Math.max(20, Math.min(100, parseInt(val, 10) || 50));
+      state.sfMissingPct = clamped;
+      pctSlider.value = String(clamped);
+      pctLabel.textContent = `${clamped}%`;
+      document.querySelectorAll('.pct-preset').forEach(b => {
+        const match = parseInt(b.getAttribute('data-pct'), 10) === clamped;
+        b.className = match
+          ? 'pct-preset px-2 py-1 rounded bg-blue-600 text-[10px] font-bold text-white'
+          : 'pct-preset px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300';
+      });
+      buildSharpsFlatsBoard();
+    };
+    pctSlider.addEventListener('input', (e) => { pctLabel.textContent = `${e.target.value}%`; });
+    pctSlider.addEventListener('change', (e) => setMissingPct(e.target.value));
+    document.querySelectorAll('.pct-preset').forEach(b => {
+      b.addEventListener('click', () => setMissingPct(b.getAttribute('data-pct')));
+    });
+
+    document.getElementById('btnKeysSelectAll').addEventListener('click', () => {
+      state.selectedScaleNoteLabels = new Set(ORDERED_ALL_NOTES.filter(k => k.label !== 'D♯').map(k => k.label));
+      renderMtKeySignaturesPicker();
+      resetMinorSessionAndStart();
+    });
+    document.getElementById('btnKeysSelectSharps').addEventListener('click', () => {
+      state.selectedScaleNoteLabels = new Set(ORDERED_ALL_NOTES.filter(k => k.label.includes('♯') && k.label !== 'D♯').map(k => k.label));
+      renderMtKeySignaturesPicker();
+      resetMinorSessionAndStart();
+    });
+    document.getElementById('btnKeysSelectFlats').addEventListener('click', () => {
+      state.selectedScaleNoteLabels = new Set(ORDERED_ALL_NOTES.filter(k => k.label.includes('♭')).map(k => k.label));
+      renderMtKeySignaturesPicker();
+      resetMinorSessionAndStart();
+    });
+
+    document.querySelectorAll('.minor-type-chk').forEach(chk => {
+      chk.addEventListener('change', () => resetMinorSessionAndStart());
+    });
+    document.getElementById('btnSelectAll3Minor').addEventListener('click', () => {
+      document.getElementById('chkMinorMelodic').checked = true;
+      document.getElementById('chkMinorHarmonic').checked = true;
+      document.getElementById('chkMinorNatural').checked = true;
+      resetMinorSessionAndStart();
+    });
+
+    document.querySelectorAll('.dir-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.minorDirection = btn.getAttribute('data-dir');
+        document.querySelectorAll('.dir-btn').forEach(b => {
+          const active = b.getAttribute('data-dir') === state.minorDirection;
+          b.className = active
+            ? 'dir-btn py-1.5 px-2 rounded-lg font-extrabold bg-blue-600 text-white'
+            : 'dir-btn py-1.5 px-2 rounded-lg font-bold text-slate-400 hover:text-white';
+        });
+        resetMinorSessionAndStart();
+      });
+    });
+
+    document.getElementById('melodicDescModeSelect').addEventListener('change', (e) => {
+      state.melodicDescMode = e.target.value;
+      resetMinorSessionAndStart();
+    });
+
+    document.getElementById('chkShowFormulaHint').addEventListener('change', renderMinorRows);
+    document.getElementById('chkPlayNoteSoundGlobal').addEventListener('change', (e) => {
+      state.soundEnabled = e.target.checked;
+    });
+
+    document.getElementById('btnPlayAllScalesAudio').addEventListener('click', () => {
+      stopScaleAudioSequence();
+      let accDelaySec = 0;
+      state.minorRows.forEach(r => {
+        const dur = playScaleRowSequence(r.id, accDelaySec);
+        accDelaySec += dur + 0.45;
+      });
+    });
+
+    document.querySelectorAll('.tmode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.minorTimerMode = btn.getAttribute('data-tmode');
+        document.querySelectorAll('.tmode-btn').forEach(b => {
+          const active = b.getAttribute('data-tmode') === state.minorTimerMode;
+          b.className = active
+            ? 'tmode-btn w-full py-2 px-3 rounded-xl font-extrabold bg-blue-600 text-white text-left border border-blue-400/50'
+            : 'tmode-btn w-full py-2 px-3 rounded-xl font-bold bg-slate-900 text-slate-300 hover:text-white text-left border border-slate-800';
+        });
+        document.getElementById('subCountdownBox').classList.toggle('hidden', state.minorTimerMode !== 'countdown');
+        document.getElementById('subFixedCountBox').classList.toggle('hidden', state.minorTimerMode !== 'fixed_count');
+        resetMinorSessionAndStart();
+      });
+    });
+
+    document.getElementById('countdownMinutesSelect').addEventListener('change', (e) => {
+      state.countdownLimitSec = parseInt(e.target.value, 10) || 180;
+      resetMinorSessionAndStart();
+    });
+    const syncFixedTargetCount = (rawVal) => {
+      const parsed = parseInt(rawVal, 10);
+      const clamped = Math.max(1, Math.min(20, Number.isNaN(parsed) ? 5 : parsed));
+      state.fixedTargetCount = clamped;
+      const sel = document.getElementById('fixedQuestionCountSelect');
+      const inp = document.getElementById('fixedQuestionCustomInput');
+      if (sel) sel.value = String(clamped);
+      if (inp) inp.value = String(clamped);
+      resetMinorSessionAndStart();
+    };
+    document.getElementById('fixedQuestionCountSelect').addEventListener('change', (e) => {
+      syncFixedTargetCount(e.target.value);
+    });
+    const fixedCustomInp = document.getElementById('fixedQuestionCustomInput');
+    if (fixedCustomInp) {
+      fixedCustomInp.addEventListener('change', (e) => {
+        syncFixedTargetCount(e.target.value);
+      });
+    }
+    document.getElementById('btnResetSessionChallenge').addEventListener('click', resetMinorSessionAndStart);
+
+    function applyCustomColorsToRoot() {
+      Object.entries(state.customColors).forEach(([cssVar, val]) => {
+        document.documentElement.style.setProperty(cssVar, val);
+      });
+    }
+
+    function renderColorPickersUI() {
+      const grid = document.getElementById('colorPickersGrid');
+      grid.innerHTML = COLOR_FIELDS.map(f => `
+        <label class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 cursor-pointer">
+          <span class="font-semibold text-slate-200">${f.label}</span>
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-[10px] text-slate-400 uppercase">${state.customColors[f.key]}</span>
+            <input type="color" data-cvar="${f.key}" value="${state.customColors[f.key]}" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0">
+          </div>
+        </label>
+      `).join('');
+
+      grid.querySelectorAll('input[type="color"]').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const k = e.target.getAttribute('data-cvar');
+          state.customColors[k] = e.target.value;
+          applyCustomColorsToRoot();
+          const span = e.target.parentElement.querySelector('span');
+          if (span) span.textContent = e.target.value;
+        });
+      });
+    }
+
+    const openColorModal = () => {
+      renderColorPickersUI();
+      document.getElementById('colorModal').classList.remove('hidden');
+    };
+    document.getElementById('btnOpenColorStudio').addEventListener('click', openColorModal);
+    document.getElementById('btnDrawerOpenColor').addEventListener('click', () => { closeSideDrawer(); openColorModal(); });
+    document.getElementById('btnCloseColorModal').addEventListener('click', () => document.getElementById('colorModal').classList.add('hidden'));
+    document.getElementById('btnApplyColorsClose').addEventListener('click', () => document.getElementById('colorModal').classList.add('hidden'));
+    document.getElementById('btnResetColors').addEventListener('click', () => {
+      COLOR_FIELDS.forEach(f => { state.customColors[f.key] = f.def; });
+      applyCustomColorsToRoot();
+      renderColorPickersUI();
+    });
+
+    document.querySelectorAll('.theme-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.getAttribute('data-theme');
+        if (t === 'default') {
+          COLOR_FIELDS.forEach(f => { state.customColors[f.key] = f.def; });
+          document.body.style.color = '#0f172a';
+        } else if (t === 'cream') {
+          Object.assign(state.customColors, {
+            '--board-bg': '#fdf8ee',
+            '--cell-given-bg': '#fef3c7', '--cell-root-bg': '#fde68a', '--cell-blank-bg': '#fffdf9',
+            '--key-btn-bg': '#f5ebd6', '--key-btn-text': '#2c1e16'
+          });
+          document.body.style.color = '#2c1e16';
+        } else if (t === 'dark') {
+          Object.assign(state.customColors, {
+            '--board-bg': '#0f172a',
+            '--cell-given-bg': '#854d0e', '--cell-root-bg': '#1e3a8a', '--cell-blank-bg': '#1e293b',
+            '--cell-active-bg': '#1e3a8a', '--key-btn-bg': '#1e293b', '--key-btn-text': '#f8fafc'
+          });
+          document.body.style.color = '#f8fafc';
+        }
+        applyCustomColorsToRoot();
+        renderColorPickersUI();
+      });
+    });
+
+    const downloadSelfHtml = () => {
+      const htmlStr = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlStr], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'bbs-music-theory-suite-v81.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    document.getElementById('btnDownloadSelfHtml').addEventListener('click', downloadSelfHtml);
+    document.getElementById('btnDrawerDownloadHtml').addEventListener('click', downloadSelfHtml);
+
+    ['chkScaleLayer3', 'chkScaleLayer4', 'chkScaleLayerTension'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', () => resetMinorSessionAndStart());
+    });
+    const btnLayersAll = document.getElementById('btnScaleLayersAll');
+    if (btnLayersAll) {
+      btnLayersAll.addEventListener('click', () => {
+        ['chkScaleLayer3', 'chkScaleLayer4', 'chkScaleLayerTension'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.checked = true;
+        });
+        resetMinorSessionAndStart();
+      });
+    }
+
+    const triadChildIds = ['chkTriadMajor', 'chkTriadMinor', 'chkTriadDim', 'chkTriadAug'];
+    const seventhChildIds = ['chkSeventhMaj7', 'chkSeventhDom7', 'chkSeventhMin7', 'chkSeventhMinMaj7'];
+
+    function syncChordGroupAllCheckboxes() {
+      const gTri = document.getElementById('chkTriadGroupAll');
+      if (gTri) {
+        gTri.checked = triadChildIds.every(id => {
+          const el = document.getElementById(id);
+          return el && el.checked;
+        });
+      }
+      const gSev = document.getElementById('chkSeventhGroupAll');
+      if (gSev) {
+        gSev.checked = seventhChildIds.every(id => {
+          const el = document.getElementById(id);
+          return el && el.checked;
+        });
+      }
+    }
+
+    const chkTriadGroupAll = document.getElementById('chkTriadGroupAll');
+    if (chkTriadGroupAll) {
+      chkTriadGroupAll.addEventListener('change', (e) => {
+        const isChecked = Boolean(e.target.checked);
+        triadChildIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.checked = isChecked;
+        });
+        if (state.activeModule !== 'chords') switchModule('chords');
+        else buildChordsBoard();
+      });
+    }
+
+    const chkSeventhGroupAll = document.getElementById('chkSeventhGroupAll');
+    if (chkSeventhGroupAll) {
+      chkSeventhGroupAll.addEventListener('change', (e) => {
+        const isChecked = Boolean(e.target.checked);
+        seventhChildIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.checked = isChecked;
+        });
+        if (state.activeModule !== 'chords') switchModule('chords');
+        else buildChordsBoard();
+      });
+    }
+
+    document.querySelectorAll('.triad-type-chk, .seventh-type-chk').forEach(chk => {
+      chk.addEventListener('change', () => {
+        syncChordGroupAllCheckboxes();
+        if (state.activeModule !== 'chords') switchModule('chords');
+        else buildChordsBoard();
+      });
+    });
+
+    document.querySelectorAll('.cinv-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.chordInversionMode = btn.getAttribute('data-cinv') === 'with_inv' ? 'with_inv' : 'root_only';
+        document.querySelectorAll('.cinv-btn').forEach(b => {
+          const active = b.getAttribute('data-cinv') === state.chordInversionMode;
+          b.className = active
+            ? 'cinv-btn py-1.5 px-2 rounded-lg font-extrabold bg-blue-600 text-white'
+            : 'cinv-btn py-1.5 px-2 rounded-lg font-bold text-slate-400 hover:text-white';
+        });
+        if (state.activeModule !== 'chords') switchModule('chords');
+        else buildChordsBoard();
+      });
+    });
+
+    const chkChordSound = document.getElementById('chkPlayChordSound');
+    if (chkChordSound) {
+      chkChordSound.addEventListener('change', (e) => {
+        state.chordSoundEnabled = Boolean(e.target.checked);
+      });
+    }
+    const chordSoundSel = document.getElementById('chordSoundModeSelect');
+    if (chordSoundSel) {
+      chordSoundSel.addEventListener('change', (e) => {
+        state.chordSoundMode = e.target.value || 'arpeggio';
+      });
+    }
+
+    const ORDERED_ALL_NOTES = [
+      { id: 'c_nat',   label: 'C',  midi: 60, standard: true },
+      { id: 'cs_sharp',label: 'C♯', midi: 61, standard: true },
+      { id: 'db_flat', label: 'D♭', midi: 61, standard: true },
+      { id: 'd_nat',   label: 'D',  midi: 62, standard: true },
+      { id: 'eb_flat', label: 'E♭', midi: 63, standard: true },
+      { id: 'e_nat',   label: 'E',  midi: 64, standard: true },
+      { id: 'f_nat',   label: 'F',  midi: 65, standard: true },
+      { id: 'fs_sharp',label: 'F♯', midi: 66, standard: true },
+      { id: 'gb_flat', label: 'G♭', midi: 66, standard: true },
+      { id: 'g_nat',   label: 'G',  midi: 67, standard: true },
+      { id: 'ab_flat', label: 'A♭', midi: 68, standard: true },
+      { id: 'a_nat',   label: 'A',  midi: 69, standard: true },
+      { id: 'bb_flat', label: 'B♭', midi: 70, standard: true },
+      { id: 'b_nat',   label: 'B',  midi: 71, standard: true }
+    ];
+    const CHORD_NAT_ROOTS = ORDERED_ALL_NOTES.filter(r => ['c_nat','d_nat','e_nat','f_nat','g_nat','a_nat','b_nat'].includes(r.id));
+    const CHORD_EXTRA_ROOTS = ORDERED_ALL_NOTES.filter(r => !['c_nat','d_nat','e_nat','f_nat','g_nat','a_nat','b_nat'].includes(r.id));
+    state.selectedChordRootIds = new Set(ORDERED_ALL_NOTES.map(r => r.id));
+
+    function renderChordRootSelector() {
+      const natGrid = document.getElementById('chordRootPoolGrid');
+      const extGrid = document.getElementById('chordExtraRootsGrid');
+      const renderBtns = (list) => list.map(item => {
+        const active = state.selectedChordRootIds.has(item.id);
+        const cls = active
+          ? 'bg-amber-500 text-slate-950 border-amber-300'
+          : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-600';
+        return `<button type="button" data-croot-id="${item.id}" class="${cls} border rounded-lg py-1 px-1 text-[11px] font-black text-center transition">${item.label}</button>`;
+      }).join('');
+
+      if (natGrid) {
+        natGrid.className = 'grid grid-cols-5 gap-1.5';
+        natGrid.innerHTML = renderBtns(ORDERED_ALL_NOTES);
+      }
+      if (extGrid) {
+        extGrid.innerHTML = '';
+        extGrid.classList.add('hidden');
+      }
+
+      document.querySelectorAll('[data-croot-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const rid = btn.getAttribute('data-croot-id');
+          if (state.selectedChordRootIds.has(rid)) {
+            if (state.selectedChordRootIds.size > 1) state.selectedChordRootIds.delete(rid);
+          } else {
+            state.selectedChordRootIds.add(rid);
+          }
+          renderChordRootSelector();
+          if (state.activeModule !== 'chords') switchModule('chords');
+          else buildChordsBoard();
+        });
+      });
+    }
+
+    const btnRootsABCDEFG = document.getElementById('btnChordRootsABCDEFG');
+    if (btnRootsABCDEFG) {
+      btnRootsABCDEFG.textContent = 'C–B ปกติ';
+      btnRootsABCDEFG.addEventListener('click', () => {
+        state.selectedChordRootIds = new Set(CHORD_NAT_ROOTS.map(r => r.id));
+        renderChordRootSelector();
+        if (state.activeModule !== 'chords') switchModule('chords');
+        else buildChordsBoard();
+      });
+    }
+
+    const btnRootsAll = document.getElementById('btnChordRootsAll');
+    if (btnRootsAll) {
+      btnRootsAll.addEventListener('click', () => {
+        state.selectedChordRootIds = new Set(ORDERED_ALL_NOTES.map(r => r.id));
+        renderChordRootSelector();
+        if (state.activeModule !== 'chords') switchModule('chords');
+        else buildChordsBoard();
+      });
+    }
+
+    renderChordRootSelector();
+
+    const chkParen = document.getElementById('chkShowChordParenName');
+    if (chkParen) {
+      chkParen.addEventListener('change', () => {
+        if (state.activeModule !== 'chords') switchModule('chords');
+        else buildChordsBoard();
+      });
+    }
+
+    ['chordStyleMajorSelect', 'chordStyleMinorSelect', 'chordStyleAugSelect', 'chordStyleDimSelect'].forEach(selId => {
+      const sel = document.getElementById(selId);
+      if (sel) {
+        sel.addEventListener('change', () => {
+          if (state.activeModule !== 'chords') switchModule('chords');
+          else buildChordsBoard();
+        });
+      }
+    });
+
+    const btnEnterChord = document.getElementById('btnEnterChordMode');
+    if (btnEnterChord) {
+      btnEnterChord.addEventListener('click', () => {
+        switchModule('chords');
+        closeSideDrawer();
+      });
+    }
+
+    function onSimpleKeyDown(e) {
+      const activeTag = document.activeElement && document.activeElement.tagName;
+      if (['INPUT', 'SELECT', 'TEXTAREA'].includes(activeTag)) return;
+
+      const code = String(e.code || '').toLowerCase();
+      const key = String(e.key || '').toLowerCase();
+      const kc = Number(e.keyCode || e.which || 0);
+
+      if (code === 'enter' || code === 'numpadenter' || key === 'enter' || kc === 13) {
+        const submitBtn = document.getElementById('btnSubmitAnswers');
+        if (state.exerciseStarted && submitBtn && !submitBtn.disabled) {
+          e.preventDefault();
+          submitAllAnswers();
+        }
+      } else if (code === 'keyr' || key === 'r' || kc === 82 || code === 'keys' || key === 's' || kc === 83) {
+        e.preventDefault();
+        startExerciseNow();
+      } else if (code === 'space' || key === ' ' || kc === 32 || code === 'keyn' || key === 'n' || kc === 78) {
+        e.preventDefault();
+        triggerNewRound();
+      } else if (code === 'escape' || key === 'escape' || kc === 27) {
+        closeSideDrawer();
+        const colorModal = document.getElementById('colorModal');
+        if (colorModal) colorModal.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('keydown', onSimpleKeyDown, true);
+
+    const SHARED_ROOT_POOL = ORDERED_ALL_NOTES.slice();
+    state.useSharedNotePool = false;
+    state.sharedSelectedKeyIds = new Set(ORDERED_ALL_NOTES.map(k => k.id));
+
+    function renderSharedNotePoolGrid() {
+      const grid = document.getElementById('sharedNotePoolGrid');
+      if (!grid) return;
+      grid.className = 'grid grid-cols-5 gap-2';
+      grid.innerHTML = SHARED_ROOT_POOL.map(item => {
+        const checked = state.sharedSelectedKeyIds.has(item.id);
+        const cls = checked
+          ? 'bg-[#5458e8] text-white border-[#7579f2] shadow-sm'
+          : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-600';
+        return `<button type="button" data-spool-id="${item.id}" class="${cls} border rounded-xl py-2.5 px-2 text-xs font-black text-center transition">${item.label}</button>`;
+      }).join('');
+
+      grid.querySelectorAll('[data-spool-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-spool-id');
+          if (state.sharedSelectedKeyIds.has(id)) {
+            if (state.sharedSelectedKeyIds.size > 1) state.sharedSelectedKeyIds.delete(id);
+          } else {
+            state.sharedSelectedKeyIds.add(id);
+          }
+          renderSharedNotePoolGrid();
+          if (state.useSharedNotePool) triggerNewRound();
+        });
+      });
+    }
+
+    const chkSharedPool = document.getElementById('chkSharedNotePoolMode');
+    const sharedPoolLbl = document.getElementById('sharedPoolModeLabel');
+    if (chkSharedPool) {
+      chkSharedPool.addEventListener('change', (e) => {
+        state.useSharedNotePool = Boolean(e.target.checked);
+        if (sharedPoolLbl) {
+          sharedPoolLbl.textContent = state.useSharedNotePool ? 'เปิด (บังคับใช้ร่วมกัน)' : 'ปิด (แยกตามเรื่อง)';
+          sharedPoolLbl.className = state.useSharedNotePool ? 'font-black text-indigo-300' : 'font-black text-slate-300';
+        }
+        triggerNewRound();
+      });
+    }
+
+    const btnSharedAll = document.getElementById('btnSharedPoolAll');
+    if (btnSharedAll) {
+      btnSharedAll.addEventListener('click', () => {
+        state.sharedSelectedKeyIds = new Set(SHARED_ROOT_POOL.map(k => k.id));
+        renderSharedNotePoolGrid();
+        if (state.useSharedNotePool) triggerNewRound();
+      });
+    }
+
+    // Wrap buildChordsBoard & generateNewMinorRound so shared note pool overrides root selection when enabled
+    const __origBuildChordsBoard = buildChordsBoard;
+    buildChordsBoard = function() {
+      if (state.useSharedNotePool && state.sharedSelectedKeyIds.size > 0) {
+        const pool = SHARED_ROOT_POOL.filter(k => state.sharedSelectedKeyIds.has(k.id));
+        if (pool.length > 0) {
+          const saved = MINOR_KEYS_CATALOG.slice();
+          MINOR_KEYS_CATALOG.length = 0;
+          pool.forEach(p => MINOR_KEYS_CATALOG.push(p));
+          __origBuildChordsBoard();
+          MINOR_KEYS_CATALOG.length = 0;
+          saved.forEach(s => MINOR_KEYS_CATALOG.push(s));
+          return;
+        }
+      }
+      __origBuildChordsBoard();
+    };
+
+    const __origGenMinor = generateNewMinorRound;
+    generateNewMinorRound = function(isFreshSession = false) {
+      if (state.useSharedNotePool && state.sharedSelectedKeyIds.size > 0) {
+        const chosenLabels = new Set(
+          SHARED_ROOT_POOL.filter(x => state.sharedSelectedKeyIds.has(x.id)).map(x => x.label)
+        );
+        const mappedIds = new Set(
+          MINOR_KEYS_CATALOG.filter(k => chosenLabels.has(k.label)).map(k => k.id)
+        );
+        if (mappedIds.size > 0) {
+          const prevSet = state.selectedMinorKeyIds;
+          state.selectedMinorKeyIds = mappedIds;
+          __origGenMinor(isFreshSession);
+          state.selectedMinorKeyIds = prevSet;
+          return;
+        }
+      }
+      __origGenMinor(isFreshSession);
+    };
+
+    const __origOpenDrawer = openSideDrawer;
+    openSideDrawer = function(tabKey) {
+      __origOpenDrawer(tabKey);
+      if (tabKey === 'shared_pool') {
+        sideDrawerTitle.textContent = 'โหมดใช้ชุดโน้ตร่วมกัน / แยกแต่ละเรื่อง';
+      }
+    };
+
+// ระบบแบบฝึกหัดขั้นคู่ (Intervals: 2-8, ขาขึ้น/ขาลง, เลือกชนิดขั้นคู่และโน้ตตั้งต้น)
+    const INTERVAL_BASE_SEMI = { 2: 2, 3: 4, 4: 5, 5: 7, 6: 9, 7: 11, 8: 12 };
+    const INTERVAL_QUAL_OFFSET = {
+      'A': 1,
+      'M': 0,
+      'P': 0,
+      'm': -1,
+      'd': -1
+    };
+
+    function getValidIntervalCodes() {
+      const valid = [];
+      const nums = [2, 3, 4, 5, 6, 7, 8];
+      const qualsByNum = {
+        2: ['A2', 'M2', 'm2', 'd2'],
+        3: ['A3', 'M3', 'm3', 'd3'],
+        4: ['A4', 'P4', 'd4'],
+        5: ['A5', 'P5', 'd5'],
+        6: ['A6', 'M6', 'm6', 'd6'],
+        7: ['A7', 'M7', 'm7', 'd7'],
+        8: ['A8', 'P8', 'd8']
+      };
+      nums.forEach(n => {
+        if (!state.selectedIntervalNums.has(n)) return;
+        (qualsByNum[n] || []).forEach(code => {
+          const q = code[0];
+          if (state.selectedIntervalQuals.has(q)) {
+            valid.push(code);
+          }
+        });
+      });
+      return valid.length > 0 ? valid : ['M3', 'P5'];
+    }
+
+    function computeSecondNoteForInterval(rootObj, code, dir) {
+      const num = parseInt(code.slice(1), 10) || 3;
+      const qual = code[0] || 'M';
+      const base = INTERVAL_BASE_SEMI[num] || 4;
+      let delta = base;
+      if (qual === 'A') delta = base + 1;
+      else if (qual === 'm') delta = base - 1;
+      else if (qual === 'd') {
+        delta = ['P4', 'P5', 'P8'].includes(`${qual}${num}`) ? base - 1 : base - 2;
+      }
+
+      if (dir === 'desc') {
+        const targetMidi = rootObj.midi - delta;
+        const letterStep = -(num - 1);
+        const noteStr = spellNoteFromRoot(rootObj.label, letterStep, -delta);
+        return { note: noteStr, midi: targetMidi };
+      } else {
+        const targetMidi = rootObj.midi + delta;
+        const letterStep = num - 1;
+        const noteStr = spellNoteFromRoot(rootObj.label, letterStep, delta);
+        return { note: noteStr, midi: targetMidi };
+      }
+    }
+
+    state.selectedIntervalNums = new Set([2, 3, 4, 5, 6, 7, 8]);
+    state.selectedIntervalQuals = new Set(['A', 'M', 'P', 'm', 'd']);
+    state.selectedIntervalRootIds = new Set(ORDERED_ALL_NOTES.map(r => r.id));
+    state.intervalQuestion = null;
+
+    state.intervalItems = [];
+    state.showIntervalNoteLabels = true;
+    state.currentIntervalClef = 'treble';
+
+    function invertIntervalCodeLabel(code) {
+      if (!code || code.length < 2) return 'm6';
+      const qual = code[0];
+      const num = parseInt(code.slice(1), 10) || 3;
+      const invNum = 9 - num;
+      let invQual = qual;
+      if (qual === 'M') invQual = 'm';
+      else if (qual === 'm') invQual = 'M';
+      else if (qual === 'A') invQual = 'd';
+      else if (qual === 'd') invQual = 'A';
+      else if (qual === 'P') invQual = 'P';
+      return `${invQual}${invNum}`;
+    }
+
+    function pickActiveIntervalClef() {
+      const useTreble = !document.getElementById('chkIntClefTreble') || document.getElementById('chkIntClefTreble').checked;
+      const useBass = !document.getElementById('chkIntClefBass') || document.getElementById('chkIntClefBass').checked;
+      const pool = [];
+      if (useTreble) pool.push('treble');
+      if (useBass) pool.push('bass');
+      if (pool.length === 0) return 'treble';
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function getBoundedRootStepForClef(rootLabel, clefType, intervalNum) {
+      // Keep root note comfortably inside or within at most 1-2 ledger lines of the 5-line staff (lines 0..8)
+      const diatonicOrder = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+      const parts = parseNoteParts(rootLabel);
+      const lIdx = diatonicOrder.indexOf(parts.letter);
+      // Candidate steps in treble or bass around the middle of the staff
+      // Treble middle: steps 2..6 (G4..D5); Bass middle: steps 2..6 (B2..F3)
+      const candidates = [-2, 0, 1, 2, 3, 4, 5, 6].map(base => {
+        // Adjust to match letter name
+        const diff = (lIdx - ((base + 2 + 7) % 7) + 7) % 7;
+        return base + (diff > 3 ? diff - 7 : diff);
+      });
+      const maxTopStep = Math.min(10, 10 - Math.max(0, (intervalNum - 1) - 4));
+      const fitting = candidates.filter(st => st >= -2 && st <= maxTopStep);
+      if (fitting.length > 0) {
+        return fitting[Math.floor(fitting.length / 2)];
+      }
+      return 2;
+    }
+
+    function buildIntervalBoard() {
+      stopScaleAudioSequence();
+      state.roundCounter += 1;
+      state.submitted = false;
+      state.hasCheckedOnce = false;
+      state.allSolved = false;
+      state.submitAttempts = 0;
+      state.sessionOver = false;
+      updateInlineGradeSummaryUI(0, 0, 0, false);
+
+      let rootPool = [];
+      if (state.useSharedNotePool && state.sharedSelectedKeyIds && state.sharedSelectedKeyIds.size > 0) {
+        rootPool = SHARED_ROOT_POOL.filter(r => state.sharedSelectedKeyIds.has(r.id));
+      } else {
+        rootPool = ORDERED_ALL_NOTES.filter(r => state.selectedIntervalRootIds.has(r.id));
+      }
+      if (!rootPool || rootPool.length === 0) rootPool = ORDERED_ALL_NOTES.slice();
+      const allowAsc = !document.getElementById('chkIntDirAsc') || document.getElementById('chkIntDirAsc').checked;
+      const allowDesc = !document.getElementById('chkIntDirDesc') || document.getElementById('chkIntDirDesc').checked;
+      const bothModes = allowAsc && allowDesc;
+      const validCodes = getValidIntervalCodes();
+
+      const useTreble = !document.getElementById('chkIntClefTreble') || document.getElementById('chkIntClefTreble').checked;
+      const useBass = !document.getElementById('chkIntClefBass') || document.getElementById('chkIntClefBass').checked;
+      const clefPool = [];
+      if (useTreble) clefPool.push('treble');
+      if (useBass) clefPool.push('bass');
+      if (clefPool.length === 0) clefPool.push('treble');
+
+      const totalDistinctApprox = rootPool.length * clefPool.length * validCodes.length;
+      let rootObj = rootPool[Math.floor(Math.random() * rootPool.length)] || ORDERED_ALL_NOTES[0];
+      let chosenClef = clefPool[Math.floor(Math.random() * clefPool.length)];
+      let primaryCode = validCodes[Math.floor(Math.random() * validCodes.length)];
+
+      if (totalDistinctApprox > 1 && state.lastIntervalQuestionSig) {
+        for (let attempt = 0; attempt < 25; attempt++) {
+          const candRoot = rootPool[Math.floor(Math.random() * rootPool.length)] || ORDERED_ALL_NOTES[0];
+          const candClef = clefPool[Math.floor(Math.random() * clefPool.length)];
+          const candCode = validCodes[Math.floor(Math.random() * validCodes.length)];
+          const sig = `${candRoot.label}|${candClef}|${bothModes ? 'both' : (allowDesc ? 'desc' : 'asc')}|${candCode}`;
+          if (sig !== state.lastIntervalQuestionSig) {
+            rootObj = candRoot;
+            chosenClef = candClef;
+            primaryCode = candCode;
+            break;
+          }
+        }
+      }
+      state.lastIntervalQuestionSig = `${rootObj.label}|${chosenClef}|${bothModes ? 'both' : (allowDesc ? 'desc' : 'asc')}|${primaryCode}`;
+      state.currentIntervalClef = chosenClef;
+      const secondInfo = computeSecondNoteForInterval(rootObj, primaryCode, 'asc');
+
+      const slots = [];
+      if (bothModes) {
+        const invCode = invertIntervalCodeLabel(primaryCode);
+        slots.push({
+          id: 'int_ans_0',
+          label: 'แบบปกติ',
+          answer: primaryCode,
+          midi: secondInfo.midi,
+          isBlank: true,
+          userValue: '',
+          gradedStatus: null
+        });
+        slots.push({
+          id: 'int_ans_1',
+          label: 'พลิกกลับ',
+          answer: invCode,
+          midi: secondInfo.midi,
+          isBlank: true,
+          userValue: '',
+          gradedStatus: null
+        });
+      } else {
+        slots.push({
+          id: 'int_ans_0',
+          label: allowDesc ? 'พลิกกลับ' : 'แบบปกติ',
+          answer: allowDesc ? invertIntervalCodeLabel(primaryCode) : primaryCode,
+          midi: secondInfo.midi,
+          isBlank: true,
+          userValue: '',
+          gradedStatus: null
+        });
+      }
+
+      state.intervalItems = [{
+        id: 'int_single_q_0',
+        rootNote: rootObj.label,
+        rootMidi: rootObj.midi,
+        secondNote: secondInfo.note,
+        secondMidi: secondInfo.midi,
+        dir: allowDesc && !allowAsc ? 'desc' : 'asc',
+        clef: chosenClef,
+        bothModes: bothModes,
+        answerSlots: slots,
+        answerCell: slots[0]
+      }];
+
+      state.intervalQuestion = state.intervalItems[0];
+      state.activeCellId = slots[0].id;
+
+      const clefLabel = chosenClef === 'bass' ? 'กุญแจฟา' : 'กุญแจซอล';
+      const modeDesc = bothModes ? 'โจทย์ข้อเดียว • แบบปกติและพลิกกลับ' : (allowDesc ? 'พลิกกลับ' : 'แบบปกติ');
+      document.getElementById('pageCleanTitle').textContent = `Intervals Exercise #${state.roundCounter}`;
+      document.getElementById('pageCleanSubtitle').textContent = `${clefLabel} • ${modeDesc}`;
+      document.getElementById('statusInlineHint').textContent = 'เลือกขั้นคู่จากแผงด้านล่าง แล้วกดยืนยันคำตอบ';
+
+      updateProgressAndSubmitUI();
+      renderIntervalBoard();
+      setExerciseStartedState(false);
+      startOrUpdateTimer();
+    }
+
+    const __origGetCurrentCellsAll = getCurrentModuleCells;
+    getCurrentModuleCells = function() {
+      if (state.activeModule === 'intervals') {
+        const list = [];
+        if (Array.isArray(state.intervalItems)) {
+          state.intervalItems.forEach(q => {
+            if (Array.isArray(q.answerSlots)) {
+              q.answerSlots.forEach(s => list.push(s));
+            } else if (q.answerCell) {
+              list.push(q.answerCell);
+            }
+          });
+        }
+        return list;
+      }
+      return __origGetCurrentCellsAll();
+    };
+
+    function parseNoteParts(noteLabel) {
+      const m = String(noteLabel || 'C').match(/^([A-G])(.*)$/);
+      return {
+        letter: m ? m[1] : 'C',
+        acc: m ? m[2] : ''
+      };
+    }
+
+    function buildClefSvgMarkup(clefType, yOf) {
+      if (clefType === 'bass') {
+        const fLineY = yOf(6);
+        return `
+          <g transform="translate(52, 0)">
+            <path d="M -8 ${fLineY + 12} C 6 ${fLineY + 6}, 14 ${fLineY - 8}, 12 ${fLineY - 22} C 10 ${fLineY - 34}, -4 ${fLineY - 36}, -11 ${fLineY - 25} C -15 ${fLineY - 19}, -7 ${fLineY - 12}, -3 ${fLineY - 17} C 0 ${fLineY - 21}, -4 ${fLineY - 27}, -8 ${fLineY - 24}"
+                  fill="none" stroke="#0f172a" stroke-width="4.2" stroke-linecap="round" />
+            <circle cx="-11" cy="${fLineY - 25}" r="4.5" fill="#0f172a" />
+            <circle cx="20" cy="${fLineY - 6}" r="3.4" fill="#0f172a" />
+            <circle cx="20" cy="${fLineY + 6}" r="3.4" fill="#0f172a" />
+          </g>
+        `;
+      }
+      const gLineY = yOf(2);
+      const topLineY = yOf(8);
+      return `
+        <g transform="translate(56, 0)">
+          <path d="M 1 ${gLineY + 34} L 8 ${topLineY - 26} C 9 ${topLineY - 38}, -3 ${topLineY - 36}, -5 ${topLineY - 22} C -7 ${topLineY - 6}, 14 ${gLineY - 2}, 14 ${gLineY + 13} C 14 ${gLineY + 24}, 3 ${gLineY + 28}, -5 ${gLineY + 22} C -13 ${gLineY + 16}, -13 ${gLineY + 3}, -3 ${gLineY - 2} C 5 ${gLineY - 6}, 11 ${gLineY}, 10 ${gLineY + 7}"
+                fill="none" stroke="#0f172a" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="1" cy="${gLineY + 35}" r="4.2" fill="#0f172a" />
+        </g>
+      `;
+    }
+
+    function buildAccidentalSvgMarkup(accStr, cx, cy) {
+      if (!accStr) return '';
+      if (accStr === '𝄪') {
+        return `
+          <g transform="translate(${cx - 32}, ${cy}) scale(1.28)">
+            <path d="M -8 -8 L 0 -2 L 8 -8 L 6 0 L 8 8 L 0 2 L -8 8 L -6 0 Z" fill="#0f172a" stroke="#0f172a" stroke-width="0.6" stroke-linejoin="round" />
+          </g>
+        `;
+      }
+      return `<text x="${cx - 32}" y="${cy + 7}" text-anchor="middle" font-size="22" font-weight="900" fill="#0f172a">${accStr}</text>`;
+    }
+
+    function buildIntervalStaffSvg(q, showLabels) {
+      const yOf = (step) => 92 + (8 - step) * 10;
+      const clefType = q.clef || state.currentIntervalClef || 'treble';
+      const intNum = parseInt((q.answerSlots && q.answerSlots[0] && q.answerSlots[0].answer ? q.answerSlots[0].answer.slice(1) : '3'), 10) || 3;
+
+      // Keep root & second note within at most 1-2 ledger lines of the 5-line staff (steps -2..10)
+      const step1 = getBoundedRootStepForClef(q.rootNote, clefType, intNum);
+      const step2 = Math.min(10, step1 + (intNum - 1));
+
+      const parts1 = parseNoteParts(q.rootNote);
+      const parts2 = parseNoteParts(q.secondNote);
+
+      // Align both notes on the same horizontal plane (harmonic dyad like image 1); offset slightly on x only if adjacent (step diff == 1)
+      const baseX = 330;
+      const x1 = baseX;
+      const x2 = Math.abs(step2 - step1) === 1 ? baseX + 20 : baseX;
+
+      const renderHarmonicNoteGlyph = (cx, step, accStr, fillHex, accOffsetX = -32) => {
+        const cy = yOf(step);
+        let extra = '';
+        for (let s = -2; s >= step; s -= 2) {
+          if (s % 2 === 0) {
+            extra += `<line x1="${cx - 18}" y1="${yOf(s)}" x2="${cx + 18}" y2="${yOf(s)}" stroke="#1e293b" stroke-width="2" />`;
+          }
+        }
+        for (let s = 10; s <= step; s += 2) {
+          if (s % 2 === 0) {
+            extra += `<line x1="${cx - 18}" y1="${yOf(s)}" x2="${cx + 18}" y2="${yOf(s)}" stroke="#1e293b" stroke-width="2" />`;
+          }
+        }
+        const accHtml = accStr
+          ? (accStr === '𝄪'
+              ? `<g transform="translate(${cx + accOffsetX - 2}, ${cy}) scale(1.45)"><path d="M -9 -9 L 0 -1.5 L 9 -9 L 10.5 -7.5 L 2 0 L 10.5 7.5 L 9 9 L 0 1.5 L -9 9 L -10.5 7.5 L -2 0 L -10.5 -7.5 Z" fill="#0f172a" /><circle cx="0" cy="-7.2" r="1.4" fill="#0f172a" /><circle cx="0" cy="7.2" r="1.4" fill="#0f172a" /><circle cx="-7.2" cy="0" r="1.4" fill="#0f172a" /><circle cx="7.2" cy="0" r="1.4" fill="#0f172a" /></g>`
+              : `<text x="${cx + accOffsetX}" y="${cy + 7}" text-anchor="middle" font-size="22" font-weight="900" fill="#0f172a">${accStr}</text>`)
+          : '';
+        return `
+          ${extra}
+          ${accHtml}
+          <ellipse cx="${cx}" cy="${cy}" rx="11.5" ry="8.2" transform="rotate(-14 ${cx} ${cy})" fill="${fillHex}" stroke="#0f172a" stroke-width="2" />
+        `;
+      };
+
+      const staffLines = [0, 2, 4, 6, 8].map(s => {
+        const y = yOf(s);
+        return `<line x1="20" y1="${y}" x2="620" y2="${y}" stroke="#475569" stroke-width="1.8" />`;
+      }).join('');
+
+      const clefNameTh = clefType === 'bass' ? 'กุญแจฟา' : 'กุญแจซอล';
+
+      return `
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 overflow-auto max-h-[280px]">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-500 px-1 mb-1">
+            <span>บรรทัด 5 เส้น (${clefNameTh} • ไม่มี Key Signature • Accidental หน้าโน้ต)</span>
+            ${showLabels ? `<span class="text-slate-600">โน้ตคู่: ${q.rootNote} – ${q.secondNote}</span>` : ''}
+          </div>
+          <svg viewBox="0 0 640 205" class="w-full min-w-[520px] max-w-[660px] mx-auto block select-none">
+            ${staffLines}
+            <line x1="20" y1="${yOf(8)}" x2="20" y2="${yOf(0)}" stroke="#334155" stroke-width="2" />
+            <line x1="620" y1="${yOf(8)}" x2="620" y2="${yOf(0)}" stroke="#334155" stroke-width="2" />
+            ${buildClefSvgMarkup(clefType, yOf)}
+            ${renderHarmonicNoteGlyph(x1, step1, parts1.acc, '#93c5fd', -34)}
+            ${renderHarmonicNoteGlyph(x2, step2, parts2.acc, '#fde047', -56)}
+          </svg>
+        </div>
+      `;
+    }
+
+    function renderIntervalBoard() {
+      const container = document.getElementById('intervalSingleCardContainer');
+      if (!container || !Array.isArray(state.intervalItems) || state.intervalItems.length === 0) return;
+
+      const q = state.intervalItems[0];
+      const showLabels = document.getElementById('chkShowIntervalNoteLabels')
+        ? Boolean(document.getElementById('chkShowIntervalNoteLabels').checked)
+        : true;
+      state.showIntervalNoteLabels = showLabels;
+
+      const noteInfoBoxesHtml = showLabels ? `
+        <div class="grid grid-cols-2 gap-3 text-center">
+          <div class="cell-root rounded-2xl p-3 border border-blue-200 flex flex-col items-center justify-center">
+            <span class="text-[11px] font-bold text-slate-500">โน้ตล่าง</span>
+            <span class="text-xl sm:text-2xl font-black mt-0.5">${q.rootNote}</span>
+          </div>
+          <div class="cell-given rounded-2xl p-3 border border-amber-200 flex flex-col items-center justify-center">
+            <span class="text-[11px] font-bold text-slate-600">โน้ตบน</span>
+            <span class="text-xl sm:text-2xl font-black mt-0.5">${q.secondNote}</span>
+          </div>
+        </div>
+      ` : '';
+
+      const slots = q.answerSlots || [q.answerCell];
+      const answerBoxesHtml = slots.map(cell => {
+        const isActive = !state.allSolved && cell.gradedStatus !== 'correct' && state.activeCellId === cell.id;
+        let cls = 'cell-blank';
+        let labelVal = '?';
+        let hintVal = 'กดปุ่มขั้นคู่ด้านล่าง';
+        if (cell.gradedStatus === 'wrong') {
+          cls = 'cell-wrong';
+          labelVal = cell.userValue || '?';
+          hintVal = 'ผิด • เลือกใหม่ได้';
+        } else if (cell.userValue) {
+          cls = state.allSolved ? 'cell-correct' : 'cell-filled-draft';
+          labelVal = cell.userValue;
+          hintVal = state.allSolved ? 'ถูกต้อง' : 'เลือกแล้ว';
+        }
+        if (isActive) {
+          cls += ' cell-active';
+        }
+        return `
+          <button type="button" data-cell-id="${cell.id}" class="${cls} rounded-2xl p-3.5 flex flex-col items-center justify-center text-center">
+            <span class="text-[11px] font-extrabold opacity-85">${cell.label || 'คำตอบขั้นคู่'}</span>
+            <span class="text-2xl sm:text-3xl font-black mt-0.5">${labelVal}</span>
+            <span class="text-[10px] font-extrabold mt-0.5">${hintVal}</span>
+          </button>
+        `;
+      }).join('');
+
+      container.className = 'max-w-4xl mx-auto';
+      container.innerHTML = `
+        <div class="border-2 border-slate-300 rounded-2xl p-5 bg-white shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
+            <span class="px-3 py-1 rounded-xl bg-blue-50 text-blue-800 border border-blue-200 text-xs font-black">
+              ${q.bothModes ? 'โจทย์ข้อเดียว • แบบปกติและพลิกกลับ' : (slots[0] && slots[0].label === 'พลิกกลับ' ? 'พลิกกลับ' : 'แบบปกติ')}
+            </span>
+            <button type="button" id="btnPlayIntervalPair" class="px-3 py-1 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 text-xs font-black">
+              🔊 ฟังเสียงคู่นี้
+            </button>
+          </div>
+
+          ${buildIntervalStaffSvg(q, showLabels)}
+          ${noteInfoBoxesHtml}
+
+          <div class="grid ${slots.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 max-w-sm mx-auto'} gap-3">
+            ${answerBoxesHtml}
+          </div>
+        </div>
+      `;
+
+      const noteRowsEl = document.getElementById('noteAnswerPad');
+      const intPadEl = document.getElementById('intervalAnswerPad');
+      const pickerTitleEl = document.getElementById('pickerHeaderTitleText');
+      if (noteRowsEl) noteRowsEl.classList.add('hidden');
+      if (intPadEl) intPadEl.classList.remove('hidden');
+      if (pickerTitleEl) pickerTitleEl.textContent = '⠿ เลือกขั้นคู่';
+
+      const playBtn = document.getElementById('btnPlayIntervalPair');
+      if (playBtn) {
+        playBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          playSingleMidi(q.rootMidi, 0.35);
+          setTimeout(() => playSingleMidi(q.secondMidi, 0.42), 340);
+        });
+      }
+
+      container.querySelectorAll('[data-cell-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cid = btn.getAttribute('data-cell-id');
+          const cell = getCurrentModuleCells().find(c => c.id === cid);
+          if (!cell || cell.gradedStatus === 'correct' || state.allSolved) return;
+          state.activeCellId = cid;
+          renderIntervalBoard();
+        });
+      });
+    }
+
+    function renderIntervalSettingsGrids() {
+      const numGrid = document.getElementById('intervalNumGrid');
+      if (numGrid) {
+        numGrid.innerHTML = [2, 3, 4, 5, 6, 7, 8].map(n => {
+          const active = state.selectedIntervalNums.has(n);
+          const cls = active ? 'bg-emerald-600 text-white border-emerald-400' : 'bg-slate-950 text-slate-400 border-slate-800';
+          return `<button type="button" data-intnum="${n}" class="${cls} border rounded-lg py-1 text-xs font-black">${n}</button>`;
+        }).join('');
+        numGrid.querySelectorAll('[data-intnum]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const n = parseInt(btn.getAttribute('data-intnum'), 10);
+            if (state.selectedIntervalNums.has(n)) {
+              if (state.selectedIntervalNums.size > 1) state.selectedIntervalNums.delete(n);
+            } else {
+              state.selectedIntervalNums.add(n);
+            }
+            renderIntervalSettingsGrids();
+            if (state.activeModule === 'intervals') buildIntervalBoard();
+          });
+        });
+      }
+
+      const qualGrid = document.getElementById('intervalQualGrid');
+      if (qualGrid) {
+        const qList = [
+          { code: 'A', label: 'A' },
+          { code: 'M', label: 'M' },
+          { code: 'P', label: 'P' },
+          { code: 'm', label: 'm' },
+          { code: 'd', label: 'd' }
+        ];
+        qualGrid.innerHTML = qList.map(q => {
+          const active = state.selectedIntervalQuals.has(q.code);
+          const cls = active ? 'bg-sky-600 text-white border-sky-400' : 'bg-slate-950 text-slate-400 border-slate-800';
+          return `<button type="button" data-intqual="${q.code}" class="${cls} border rounded-lg py-1 text-xs font-black">${q.label}</button>`;
+        }).join('');
+        qualGrid.querySelectorAll('[data-intqual]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const q = btn.getAttribute('data-intqual');
+            if (state.selectedIntervalQuals.has(q)) {
+              if (state.selectedIntervalQuals.size > 1) state.selectedIntervalQuals.delete(q);
+            } else {
+              state.selectedIntervalQuals.add(q);
+            }
+            renderIntervalSettingsGrids();
+            if (state.activeModule === 'intervals') buildIntervalBoard();
+          });
+        });
+      }
+
+      const rootGrid = document.getElementById('intervalRootGrid');
+      if (rootGrid) {
+        rootGrid.innerHTML = ORDERED_ALL_NOTES.map(r => {
+          const active = state.selectedIntervalRootIds.has(r.id);
+          const cls = active ? 'bg-amber-500 text-slate-950 border-amber-300' : 'bg-slate-950 text-slate-400 border-slate-800';
+          return `<button type="button" data-introot="${r.id}" class="${cls} border rounded-lg py-1.5 px-1 text-[11px] font-black">${r.label}</button>`;
+        }).join('');
+        rootGrid.querySelectorAll('[data-introot]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const rid = btn.getAttribute('data-introot');
+            if (state.selectedIntervalRootIds.has(rid)) {
+              if (state.selectedIntervalRootIds.size > 1) state.selectedIntervalRootIds.delete(rid);
+            } else {
+              state.selectedIntervalRootIds.add(rid);
+            }
+            renderIntervalSettingsGrids();
+            if (state.activeModule === 'intervals' && !state.useSharedNotePool) buildIntervalBoard();
+          });
+        });
+      }
+    }
+
+    document.querySelectorAll('#intervalAnswerPad .mt-int-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chosenInterval = btn.getAttribute('data-interval');
+        if (!chosenInterval || state.allSolved || state.sessionOver || !Array.isArray(state.intervalItems) || state.intervalItems.length === 0) return;
+        const allCells = getCurrentModuleCells();
+        let targetCell = allCells.find(c => c.id === state.activeCellId && c.gradedStatus !== 'correct');
+        if (!targetCell) {
+          targetCell = allCells.find(c => !c.userValue && c.gradedStatus !== 'correct') || allCells.find(c => c.gradedStatus !== 'correct');
+        }
+        if (!targetCell) return;
+
+        playSingleMidi(targetCell.midi, 0.35);
+        targetCell.userValue = chosenInterval;
+        if (targetCell.gradedStatus === 'wrong') targetCell.gradedStatus = null;
+
+        const nextUnfilled = allCells.find(c => c.id !== targetCell.id && !c.userValue && c.gradedStatus !== 'correct');
+        if (nextUnfilled) {
+          state.activeCellId = nextUnfilled.id;
+        }
+
+        updateProgressAndSubmitUI();
+        renderIntervalBoard();
+        document.getElementById('statusInlineHint').textContent = 'เลือกขั้นคู่ "' + chosenInterval + '" แล้ว กดยืนยันคำตอบหรือกด Enter';
+      });
+    });
+
+    const chkShowIntLabels = document.getElementById('chkShowIntervalNoteLabels');
+    if (chkShowIntLabels) {
+      chkShowIntLabels.addEventListener('change', () => {
+        if (state.activeModule === 'intervals') renderIntervalBoard();
+      });
+    }
+
+    ['chkIntClefTreble', 'chkIntClefBass'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('change', () => {
+          if (state.activeModule === 'intervals') buildIntervalBoard();
+        });
+      }
+    });
+
+    ['chkIntDirAsc', 'chkIntDirDesc'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('change', () => {
+          if (state.activeModule === 'intervals') buildIntervalBoard();
+        });
+      }
+    });
+
+    const btnIntNumsAll = document.getElementById('btnIntNumsAll');
+    if (btnIntNumsAll) {
+      btnIntNumsAll.addEventListener('click', () => {
+        state.selectedIntervalNums = new Set([2, 3, 4, 5, 6, 7, 8]);
+        renderIntervalSettingsGrids();
+        if (state.activeModule === 'intervals') buildIntervalBoard();
+      });
+    }
+
+    const btnIntQualsAll = document.getElementById('btnIntQualsAll');
+    if (btnIntQualsAll) {
+      btnIntQualsAll.addEventListener('click', () => {
+        state.selectedIntervalQuals = new Set(['A', 'M', 'P', 'm', 'd']);
+        renderIntervalSettingsGrids();
+        if (state.activeModule === 'intervals') buildIntervalBoard();
+      });
+    }
+
+    const btnIntRootsAll = document.getElementById('btnIntRootsAll');
+    if (btnIntRootsAll) {
+      btnIntRootsAll.addEventListener('click', () => {
+        state.selectedIntervalRootIds = new Set(ORDERED_ALL_NOTES.map(r => r.id));
+        renderIntervalSettingsGrids();
+        if (state.activeModule === 'intervals' && !state.useSharedNotePool) buildIntervalBoard();
+      });
+    }
+
+    const btnEnterInt = document.getElementById('btnEnterIntervalMode');
+    if (btnEnterInt) {
+      btnEnterInt.addEventListener('click', () => {
+        switchModule('intervals');
+        closeSideDrawer();
+      });
+    }
+
+    renderIntervalSettingsGrids();
+
+    renderSharedNotePoolGrid();
+    renderMtKeySignaturesPicker();
+    switchModule('sharps_flats');
+  </script>
+</body>
+</html>
